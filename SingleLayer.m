@@ -48,20 +48,19 @@ classdef SingleLayer < OptTool
             obj.NR2 = NR2;
         end
 
-        %根据距离x、厚度H, 求解出射角度
-        function inTheta = thetaCompute(~, x, H)
-            inTheta = atan(x / (2 * H));
+        %根据距离x、厚度h, 求解出射角度
+        function inTheta = thetaCompute(~, x, h)
+            inTheta = atan(x / (2 * h));
         end
 
-        %根据厚度H, 出射角度theta, 计算距离x
-        function x = disCompute(~, theta, H)
-            x = 2 * H * tan(theta);
+        %根据厚度h, 出射角度theta, 计算距离x
+        function x = disCompute(~, theta, h)
+            x = 2 * h * tan(theta);
         end
-
 
         %此函数计算dx = alpha * dtheta 中的alpha
-        function alpha = alphaCompute(~, H, inTheta)
-            alpha = 2 * H / power(cos(inTheta), 2);
+        function alpha = alphaCompute(~, h, inTheta)
+            alpha = 2 * h / power(cos(inTheta), 2);
         end
 
         %该函数根据光源波长lambda(nm)得到介质的折射率实部和虚部
@@ -74,9 +73,9 @@ classdef SingleLayer < OptTool
         %该函数计算单点的光通量
         %该函数根据距离x(m), 网格大小dphi(rad),dx(m), 波长lambda(nm)
         %介质的折射率实部和虚部nr1, ni1, 外部介质折射率实部nr2
-        %厚度H(m), 最大出射角度U(rad), 光源的光通量S(lm)
+        %厚度h(m), 最大出射角度U(rad), 光源的光通量S(lm)
         %求得在dxdphi下的光通量dFlux(lm)
-        function dFlux = dFluxCompute(obj, inTheta, H)
+        function dFlux = dFluxCompute(obj, inTheta, h)
             %计算光线进入外部介质中的折射角
             airTheta = obj.snell(obj.nr1, obj.nr2, inTheta);
             %根据上述角度计算界面的反射系数
@@ -85,16 +84,16 @@ classdef SingleLayer < OptTool
             k = obj.absCompute(obj.ni1, obj.lambda);
             %计算位置x处,dxdphi下的光通量
             coff1 = cos(inTheta) * sin(inTheta) * r;
-            coff2 = exp(-2 * k * H / cos(inTheta));
+            coff2 = exp(-2 * k * h / cos(inTheta));
             dFlux = coff1 * coff2;
         end
 
         %该函数计算单根光纤之间的光通量
-        %返回以dphi(rad), dx(m)为网格大小, 在厚为H(m)
+        %返回以dphi(rad), dx(m)为网格大小, 在厚为h(m)
         %最大出射角度为U(rad), 光源的光通量为S(lm), 光源波长为lambda(nm)
         %接收光纤的中心位置距离光源x(m), 位于光源相角为phi(rad) 
         %接收半径为R(m)的条件下的接收光通量
-        function flux = fluxCompute(obj, x, phi, minU, maxU, H)
+        function flux = fluxCompute(obj, x, phi, minU, maxU, h)
             %计算可能包含的网格点范围
             %当前光纤相对于光源的半角
             theta = asin(obj.R / x);
@@ -107,14 +106,14 @@ classdef SingleLayer < OptTool
             %计算包含的网格点, 并将网格点中的dFlux累加
             flux = 0;
             %计算边界条件
-            minD = obj.disCompute(minU, H);
-            maxD = obj.disCompute(maxU, H);
+            minD = obj.disCompute(minU, h);
+            maxD = obj.disCompute(maxU, h);
             kxLower = floor(max(x - obj.R, minD) / obj.dx);
             kxUpper = ceil(min(x + obj.R, maxD) / obj.dx);
             for i = kxLower: 1: kxUpper
                 nowX = obj.dx * i;
                 %计算当前距离下的入射角
-                inTheta = obj.thetaCompute(nowX, H);
+                inTheta = obj.thetaCompute(nowX, h);
                 %在x位置固定后,dphi的变化不会影响光通量的计算
                 %但是可能处于临界角度之外
                 count = 0;
@@ -141,7 +140,7 @@ classdef SingleLayer < OptTool
                     obj.ncaluCount = obj.ncaluCount + 1;
                     %只有该距离没有被计算过才需要计算
                     if ~isKey(obj.rMap, nowX)
-                        obj.rMap(nowX) = obj.dFluxCompute(inTheta, H);
+                        obj.rMap(nowX) = obj.dFluxCompute(inTheta, h);
                         obj.rcaluCount = obj.rcaluCount + 1;
                     end
                     dflux = obj.rMap(nowX);
