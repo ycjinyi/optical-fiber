@@ -2,14 +2,14 @@ classdef OptCompute
 %此类封装光学计算参数，并进行计算
     properties
         %网格参数
-        %dphi(rad), dx(m)为网格大小
+        %dphi(rad), dtheta(rad)为网格大小
         dphi = pi / 2000; 
-        dx = 1e-5;
+        dtheta = pi / 2000;
         % dphi = pi / 800; 
-        % dx = 5e-5;
+        % dtheta = pi / 800;
         %光源参数
-        %最大出射角度为U(rad), 光源总的光通量为S(lm)
-        U = 80 * pi / (2 * 180);
+        %最大出射平面孔径角为U(rad), 光源总的光通量为S(lm)
+        U = 30 * pi / 180;
         S = 1e8;
         %光纤参数
         %接收光纤的接收半径为R(m)
@@ -22,8 +22,6 @@ classdef OptCompute
         H = 1.5e-3;
         %是否限制光源入射的临界角
         CAS = true;
-        %是否限制光纤接收的临界角
-        CAR = false;
     end
 
     methods
@@ -52,7 +50,7 @@ classdef OptCompute
             %不区分波段先计算光源参数
             LS = LightSource();
             [flux, angle] = LS.fluxMatrixCompute(SPM, obj.H, obj.S, obj.U, obj.R, ...
-                obj.NA, obj.NF, obj.CAS, obj.dx, obj.dphi);
+                obj.NA, obj.NF, obj.CAS, obj.dtheta, obj.dphi);
             % % angle(1, :) = angle(1, :) * 0;
             % % angle(2, :) = ones(1, size(angle, 2)) * 0.4887;
             % [~, idx] = sort(SPM(1, 1, :));
@@ -73,11 +71,15 @@ classdef OptCompute
             % % xlabel("光纤编号");
             % ylabel("入射角");
             % grid on;
+            %目前去不考虑最小入射角的限制
+            angle(1, :) = angle(1, :) * 0;
             %分波段进行计算
             for i = 1: pNumber
                 %根据出射参数计算结果
-                [fluxMatrix, ict, nct, rct] = OC.fluxMatrixCompute(posMatrix, lambdas(1, i), ...
-                    hPoints, flux, angle, LS.nr, obj.NF, obj.NA, obj.CAR, obj.R, obj.dx, obj.dphi, i, points);
+                [fluxMatrix, ict, nct, rct] = ...
+                    OC.fluxMatrixCompute(posMatrix, lambdas(1, i), hPoints,...
+                    flux, angle, LS.nr, obj.NF, obj.NA, obj.R,...
+                    obj.dtheta, obj.dphi, i, points);
                 %保存当前波段下计算结果
                 fluxs(i, :, :) = fluxMatrix;
                 %累加统计值

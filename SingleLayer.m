@@ -22,13 +22,13 @@ classdef SingleLayer < OptTool
         NF;
         %光纤子午面内的数值孔径
         NA;
-        %dx(m),dphi(rad)代表网格的大小
-        dx;
+        %dtheta(rad),dphi(rad)代表网格的大小
+        dtheta;
         dphi;
         %加快计算的集合
         rMap;
-        %是否限制临界角
-        CA;
+        %等效光源到光纤平面的距离d
+        d;
 
         %-----计算时的统计数据-----
         %包含的点数
@@ -48,19 +48,14 @@ classdef SingleLayer < OptTool
             obj.NR2 = NR2;
         end
 
-        %根据距离x、厚度h, 求解出射角度
-        function inTheta = thetaCompute(~, x, h)
-            inTheta = atan(x / (2 * h));
+        %根据距离x, 厚度h, 等效光源距离d, 求解出射角度
+        function inTheta = thetaCompute(obj, x, h)
+            inTheta = atan(x / (obj.d + 2 * h));
         end
 
-        %根据厚度h, 出射角度theta, 计算距离x
-        function x = disCompute(~, theta, h)
-            x = 2 * h * tan(theta);
-        end
-
-        %此函数计算dx = alpha * dtheta 中的alpha
-        function alpha = alphaCompute(~, h, inTheta)
-            alpha = 2 * h / power(cos(inTheta), 2);
+        %根据厚度h, 出射角度theta, 等效光源距离d 计算距离x
+        function x = disCompute(obj, theta, h)
+            x = (2 * h + obj.d) * tan(theta);
         end
 
         %该函数根据光源波长lambda(nm)得到介质的折射率实部和虚部
@@ -89,7 +84,7 @@ classdef SingleLayer < OptTool
         end
 
         %该函数计算单根光纤之间的光通量
-        %返回以dphi(rad), dx(m)为网格大小, 在厚为h(m)
+        %返回以dphi(rad), dtheta(rad)为网格大小, 在厚为h(m)
         %最大出射角度为U(rad), 光源的光通量为S(lm), 光源波长为lambda(nm)
         %接收光纤的中心位置距离光源x(m), 位于光源相角为phi(rad) 
         %接收半径为R(m)的条件下的接收光通量
@@ -97,53 +92,65 @@ classdef SingleLayer < OptTool
             %计算可能包含的网格点范围
             %当前光纤相对于光源的半角
             theta = asin(obj.R / x);
-            %角度范围
+            %方位角范围
             kphiLower = floor((phi - theta + 2 * pi) / obj.dphi);
             KphiUpper = ceil((phi + theta + 2 * pi) / obj.dphi);
+            %天顶角范围
+            lthetaLower = floor(obj.thetaCompute(x - obj.R, h) / obj.dtheta);
+            lthetaUpper = ceil(obj.thetaCompute(x + obj.R, h) / obj.dtheta);
             %计算当前光纤的坐标位置
             x1 = x * cos(phi);
             y1 = x * sin(phi);
             %计算包含的网格点, 并将网格点中的dFlux累加
             flux = 0;
             %计算边界条件
-            minD = obj.disCompute(minU, h);
-            maxD = obj.disCompute(maxU, h);
-            kxLower = floor(max(x - obj.R, minD) / obj.dx);
-            kxUpper = ceil(min(x + obj.R, maxD) / obj.dx);
-            for i = kxLower: 1: kxUpper
-                nowX = obj.dx * i;
-                %计算当前距离下的入射角
-                inTheta = obj.thetaCompute(nowX, h);
+            lmin = ceil(minU / obj.dtheta);
+            lmax = floor(maxU / obj.dtheta);
+            lthetaLower = max(lmin, lthetaLower);
+            lthetaUpper = min(lmax, lthetaUpper);
+            for i = lthetaLower: lthetaUpper
+                %当前的入射角
+                inTheta = i * obj.dtheta;
+                %计算当前的距离
+                nowX = obj.disCompute(inTheta, h);
                 %在x位置固定后,dphi的变化不会影响光通量的计算
-                %但是可能处于临界角度之外
                 count = 0;
-                for j = kphiLower: 1: KphiUpper
-                    nowPhi = obj.dphi * j;
-                    x2 = nowX * cos(nowPhi);
-                    y2 = nowX * sin(nowPhi);
-                    dis = power(x1 - x2, 2) + power(y1 - y2, 2);
-                    if dis > power(obj.R, 2)
-                        continue;
+                %查找在接收范围内的下界
+                l = kphiLower;
+                r = KphiUpper;
+                while l < r
+                    j = floor((l + r) / 2);
+                    if obj.acJudg(x1, y1, obj.R, nowX, obj.dphi * j)
+                        r = j;
+                    else 
+                        l = j + 1;
                     end
-                    if obj.CA == true
-                        %计算临界角
-                        theta = obj.criticalAngle(x, obj.R, nowPhi - phi, obj.nr1, obj.NA);
-                        %超过临界角直接跳过
-                        if inTheta > theta
-                            continue;
-                        end
+                end
+                k1 = l;
+                %查找在接收范围内的上界
+                l = kphiLower;
+                r = KphiUpper;
+                while l < r
+                    j = ceil((l + r) / 2);
+                    if obj.acJudg(x1, y1, obj.R, nowX, obj.dphi * j)
+                        l = j;
+                    else 
+                        r = j - 1;
                     end
-                    count = count + 1;
+                end
+                k2 = l;
+                if k1 <= k2
+                    count = k2 - k1 + 1;
                 end
                 if count > 0
                     obj.incluCount = obj.incluCount + count;
                     obj.ncaluCount = obj.ncaluCount + 1;
-                    %只有该距离没有被计算过才需要计算
-                    if ~isKey(obj.rMap, nowX)
-                        obj.rMap(nowX) = obj.dFluxCompute(inTheta, h);
+                    %只有该天顶角没有被计算过才需要计算
+                    if ~isKey(obj.rMap, i)
+                        obj.rMap(i) = obj.dFluxCompute(inTheta, h);
                         obj.rcaluCount = obj.rcaluCount + 1;
                     end
-                    dflux = obj.rMap(nowX);
+                    dflux = obj.rMap(i);
                     flux = flux + count * dflux;
                 end
             end
@@ -159,13 +166,15 @@ classdef SingleLayer < OptTool
         %U代表n个光纤的最小入射角、最大入射角(rad),分别是第1、2行
         %n代表光源所在介质的折射率
         %R代表接收光纤的半径(m)
+        %NA光纤的数值孔径
+        %NF光纤的折射率 
         %dx(m),dphi(rad)代表网格的大小
         %hPoints代表厚度点,1行n列
         %返回值fluxMatrix的列代表不同接收光纤的光通量,行代表不同介质厚度下的情况
         %fluxMatrix的列数为接收光纤的个数,行数为上层厚度的情况数目
         %idx表示当前计算的波段序号, points代表所有需要计算的波段数目*厚度数目,用于输出计算进度
         function [fluxMatrix, ic, nc, rc] = fluxMatrixCompute(obj, posMatrix,...
-                lambda, hPoints, S, U, n, R, NF, NA, CA, dx, dphi, idx, points)
+                lambda, hPoints, S, U, n, R, NF, NA, dtheta, dphi, idx, points)
             obj.incluCount = 0;
             obj.ncaluCount = 0;
             obj.rcaluCount = 0;
@@ -174,8 +183,7 @@ classdef SingleLayer < OptTool
             obj.R = R;
             obj.NF = NF;
             obj.NA = NA;
-            obj.CA = CA;
-            obj.dx = dx;
+            obj.dtheta = dtheta;
             obj.dphi = dphi;
             %计算光源的参数
             sNumber = size(posMatrix, 2);
@@ -202,6 +210,8 @@ classdef SingleLayer < OptTool
                 tempMatrix = zeros(sNumber, rNumber);
                 %计算发射光纤和接收光纤两两之间的响应
                 for i = 1: sNumber
+                    %每个发射光纤的等效光源位置需要更新
+                    obj.d = obj.R / tan(U(2, i));
                     for j = 1: rNumber
                         tempMatrix(i, j) = obj.fluxCompute(posMatrix(1, i, j), ...
                             posMatrix(2, i, j), U(1, i), U(2, i), hPoints(1, H));
@@ -209,7 +219,7 @@ classdef SingleLayer < OptTool
                     %根据不同光源的属性调整光通量
                     tempMatrix(i, :) = tempMatrix(i, :) * S(1, i) ...
                         / (pi * (power(sin(U(2, i)), 2) - power(sin(U(1, i)), 2))) ...
-                        * obj.dx * obj.dphi;
+                        * obj.dtheta * obj.dphi;
                 end
                 %直接合并为一行,为每根接收光纤接收到的所有光通量
                 fluxMatrix(H, :) = sum(tempMatrix, 1);
