@@ -74,7 +74,7 @@ classdef FiberGenerator
             %发射光线作为原点
             s = [0; 0];
             %接收光线与发射光线y坐标相同
-            r = [coreDis; 0];
+            r = [coreDis, coreDis; 0, 0];
         end
         
         %-----------------将xy坐标转换为实际的posMatrix的函数----------------

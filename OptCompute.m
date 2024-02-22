@@ -28,9 +28,10 @@ classdef OptCompute
         function obj = OptCompute()
         end
 
-        %此函数用于计算设定波段范围和厚度范围内的结果
+        %此函数用于计算设定波段范围和厚度范围内的结果，是考虑了光源的模型
         %flux是接收光纤在各个波段的响应,hPoints是对应的介质厚度变化情况
-        %posMatrix是光纤的排布参数
+        %SPM是光源和发射光纤之间的排布参数
+        %posMatrix是发射光纤和接收光纤之间的排布参数
         %OC参数可以传入Bilayer和SingleLayer对象用于不同的计算
         %flux [a, b, c] 3维,a是波段,b是厚度点,c是接收光纤
         function [fluxs, ic, nc, rc] = compute(obj, OC, SPM, posMatrix, lambdas, hPoints)
@@ -78,7 +79,7 @@ classdef OptCompute
                 %根据出射参数计算结果
                 [fluxMatrix, ict, nct, rct] = ...
                     OC.fluxMatrixCompute(posMatrix, lambdas(1, i), hPoints,...
-                    flux, angle, LS.nr, obj.NF, obj.NA, obj.R,...
+                    flux, angle, LS.nr, false, obj.R,...
                     obj.dtheta, obj.dphi, i, points);
                 %保存当前波段下计算结果
                 fluxs(i, :, :) = fluxMatrix;
@@ -89,5 +90,48 @@ classdef OptCompute
             end
             toc;
         end
+
+        %此函数用于计算设定波段范围和厚度范围内的结果，不考虑光源耦合模型
+        %flux是接收光纤在各个波段的响应,hPoints是对应的介质厚度变化情况
+        %posMatrix是光纤的排布参数
+        %OC参数可以传入Bilayer和SingleLayer对象用于不同的计算
+        %flux [a, b, c] 3维,a是波段,b是厚度点,c是接收光纤
+        %R代表接收光纤的半径(m)
+        %dtheta(rad),dphi(rad)代表网格的大小
+        function [fluxs, ic, nc, rc] = idealCompute(~, OC, posMatrix, ...
+                lambdas, hPoints, U, S, R, dtheta, dphi)
+            ic = 0; 
+            nc = 0;
+            rc = 0;
+            %需要计算的总波段数目
+            pNumber = size(lambdas, 2);
+            %厚度数目
+            hNumber = size(hPoints, 2);
+            %数据集合
+            rNumber = size(posMatrix, 3);
+            fluxs = zeros(pNumber, hNumber, rNumber);
+            %需要计算的所有波段数目*厚度数目,用于输出计算进度
+            points = pNumber * hNumber;
+            %理想光源, 所有发射光纤的最小出射角为0, 最大出射角统一
+            sNumber = size(posMatrix, 3);
+            angle = ones(2, sNumber) * U;
+            angle(1, :) = angle(1, :) * 0;
+            flux = ones(1, sNumber) * S / sNumber;
+            %分波段进行计算
+            for i = 1: pNumber
+                %根据出射参数计算结果
+                [fluxMatrix, ict, nct, rct] = ...
+                    OC.fluxMatrixCompute(posMatrix, lambdas(1, i), hPoints,...
+                    flux, angle, 1, true, R,...
+                    dtheta, dphi, i, points);
+                %保存当前波段下计算结果
+                fluxs(i, :, :) = fluxMatrix;
+                %累加统计值
+                ic = ic + ict;
+                nc = nc + nct;
+                rc = rc + rct;
+            end
+        end
+
     end
 end

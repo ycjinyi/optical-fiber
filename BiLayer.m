@@ -209,6 +209,8 @@ classdef BiLayer < OptTool
         %lambda为光源的波长(nm)
         %S为1行n列,代表n个发射光纤的光通量(lm)
         %U代表n个光纤的最小入射角、最大入射角(rad),分别是第1、2行
+        %n代表光源所在介质的折射率
+        %ideal代表是否是理想情况，此时不考虑光源耦合，不需要转换角度
         %R代表接收光纤的半径(m)
         %dtheta(rad),dphi(rad)代表网格的大小
         %hPoints代表厚度点,,2行n列,第一行为介质1的厚度,第二行代表介质2的厚度
@@ -216,15 +218,13 @@ classdef BiLayer < OptTool
         %fluxMatrix的列数为接收光纤的个数,行数为不同介质厚度组合下的结果
         %idx表示当前计算的波段序号, points代表所有需要计算的波段数目*厚度数目,用于输出计算进度
         function [fluxMatrix, ic, nc, rc] = fluxMatrixCompute(obj, posMatrix, lambda,...
-                hPoints, S, U,  n, R, NF, NA, dtheta, dphi, idx, points)
+                hPoints, S, U, n, ideal, R, dtheta, dphi, idx, points)
             obj.incluCount = 0;
             obj.ncaluCount = 0;
             obj.rcaluCount = 0;
             %首先根据传入的参数设置计算时需要的参数
             obj.lambda = lambda;
             obj.R = R;
-            obj.NF = NF;
-            obj.NA = NA;
             obj.dtheta = dtheta;
             obj.dphi = dphi;
             %先根据lambda求出下层和上层介质的折射率实部和虚部
@@ -232,9 +232,11 @@ classdef BiLayer < OptTool
             %计算光源参数
             sNumber = size(posMatrix, 2);
             %将入射角度数据转换为出射角度数据
-            for i = 1: size(U, 1)
-                for j = 1: size(U, 2)
-                    U(i, j) = obj.snell(n, obj.nr1, U(i, j));
+            if ~ideal
+                for i = 1: size(U, 1)
+                    for j = 1: size(U, 2)
+                        U(i, j) = obj.snell(n, obj.nr1, U(i, j));
+                    end
                 end
             end
             %分配返回值

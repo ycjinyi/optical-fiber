@@ -18,10 +18,6 @@ classdef SingleLayer < OptTool
         nr2;
         %接收光纤的半径(m)
         R;
-        %光纤纤芯的折射率
-        NF;
-        %光纤子午面内的数值孔径
-        NA;
         %dtheta(rad),dphi(rad)代表网格的大小
         dtheta;
         dphi;
@@ -165,24 +161,21 @@ classdef SingleLayer < OptTool
         %S为1行n列,代表n个发射光纤的光通量(lm)
         %U代表n个光纤的最小入射角、最大入射角(rad),分别是第1、2行
         %n代表光源所在介质的折射率
+        %ideal代表是否是理想情况，此时不考虑光源耦合，不需要转换角度
         %R代表接收光纤的半径(m)
-        %NA光纤的数值孔径
-        %NF光纤的折射率 
-        %dx(m),dphi(rad)代表网格的大小
+        %dtheta(rad),dphi(rad)代表网格的大小
         %hPoints代表厚度点,1行n列
         %返回值fluxMatrix的列代表不同接收光纤的光通量,行代表不同介质厚度下的情况
         %fluxMatrix的列数为接收光纤的个数,行数为上层厚度的情况数目
         %idx表示当前计算的波段序号, points代表所有需要计算的波段数目*厚度数目,用于输出计算进度
         function [fluxMatrix, ic, nc, rc] = fluxMatrixCompute(obj, posMatrix,...
-                lambda, hPoints, S, U, n, R, NF, NA, dtheta, dphi, idx, points)
+                lambda, hPoints, S, U, n, ideal, R, dtheta, dphi, idx, points)
             obj.incluCount = 0;
             obj.ncaluCount = 0;
             obj.rcaluCount = 0;
             %首先根据传入的参数设置计算时需要的参数
             obj.lambda = lambda;
             obj.R = R;
-            obj.NF = NF;
-            obj.NA = NA;
             obj.dtheta = dtheta;
             obj.dphi = dphi;
             %计算光源的参数
@@ -190,9 +183,11 @@ classdef SingleLayer < OptTool
             %先根据lambda求出介质的折射率实部和虚部
             [obj.nr1, obj.ni1, obj.nr2] = obj.NCoffCompute(obj.lambda);
             %将入射角度数据转换为出射角度数据
-            for i = 1: size(U, 1)
-                for j = 1: size(U, 2)
-                    U(i, j) = obj.snell(n, obj.nr1, U(i, j));
+            if ~ideal
+                for i = 1: size(U, 1)
+                    for j = 1: size(U, 2)
+                        U(i, j) = obj.snell(n, obj.nr1, U(i, j));
+                    end
                 end
             end
             %分配返回值
