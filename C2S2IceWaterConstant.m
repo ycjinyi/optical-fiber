@@ -19,14 +19,17 @@ targetRange = waterNR(:, 1) * 1000;
 
 %颜色表和标签
 CG = ColorGenerator();
-[colorTable, ~] = CG.generate(zeros(1, 2));
+[colorTable, ~] = CG.generate(zeros(1, 17));
+
+sidx = 3;
+eidx = 16;
 
 %----------------------------冰水的折射率实部-------------------------------
 figure(1);
 plot(targetRange, waterNR(:, 2), 'Color', ...
-        [colorTable(1, :), 0.6], LineWidth=1); hold on;
+        [colorTable(sidx, :), 0.6], LineWidth=1); hold on;
 plot(targetRange, iceNR(:, 2), 'Color', ...
-        [colorTable(2, :), 0.6], LineWidth=1);
+        [colorTable(eidx, :), 0.6], LineWidth=1);
 legend("水", "冰");
 % set(gca, "YScale", "log");
 xlabel("波长(um)");
@@ -38,9 +41,9 @@ grid on;
 %----------------------------冰水的折射率虚部-------------------------------
 figure(2);
 plot(targetRange, waterNI(:, 2), 'Color', ...
-        [colorTable(1, :), 0.6], LineWidth=1); hold on;
+        [colorTable(sidx, :), 0.6], LineWidth=1); hold on;
 plot(targetRange, iceNI(:, 2), 'Color', ...
-        [colorTable(2, :), 0.6], LineWidth=1);
+        [colorTable(eidx, :), 0.6], LineWidth=1);
 legend("水", "冰");
 set(gca, "YScale", "log");
 xlabel("波长(um)");
@@ -54,9 +57,9 @@ grid on;
 % Dwater = 1e-6 / (4 * pi) * waterNI(:, 1) ./ waterNI(:, 2);
 % Dice = 1e-6 / (4 * pi) * iceNI(:, 1) ./ iceNI(:, 2);
 % plot(targetRange, Dwater, 'Color', ...
-%         [colorTable(1, :), 0.6], LineWidth=1); hold on;
+%         [colorTable(sidx, :), 0.6], LineWidth=1); hold on;
 % plot(targetRange, Dice, 'Color', ...
-%         [colorTable(2, :), 0.6], LineWidth=1);
+%         [colorTable(eidx, :), 0.6], LineWidth=1);
 % legend("水", "冰");
 % set(gca, "YScale", "log");
 % xlabel("波长(um)");
