@@ -113,7 +113,7 @@ classdef OptCompute
             %需要计算的所有波段数目*厚度数目,用于输出计算进度
             points = pNumber * hNumber;
             %理想光源, 所有发射光纤的最小出射角为0, 最大出射角统一
-            sNumber = size(posMatrix, 3);
+            sNumber = size(posMatrix, 2);
             angle = ones(2, sNumber) * U;
             angle(1, :) = angle(1, :) * 0;
             flux = ones(1, sNumber) * S / sNumber;
