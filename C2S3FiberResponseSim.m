@@ -4,6 +4,8 @@ close all;
 
 %此脚本只计算光纤探测模型, 不考虑光源耦合模型
 
+computeSwitch = true; 
+
 %计算参数
 %dphi(rad), dtheta(rad)为网格大小
 dphi = pi / 1800; 
@@ -36,17 +38,19 @@ coreDis = 1e-6 * 600;
 [posMatrix] = FG.posConvert(s, r1);
 pNum = size(ro, 2);
 %创建保存结果的矩阵
-%行为不同的厚度点，列为不同半径下的结果
-% pic1Data = zeros(size(H1, 2), pNum);
-% tic;
-% for i = 1: pNum
-%     %fluxs(波段,厚度,接收光纤)
-%     [fluxs, ic, nc, rc] = OC.idealCompute(SL, posMatrix, lambdas, H1,...
-%                         U, S, r(1, i), dtheta, dphi);
-%     pic1Data(:, i) = fluxs(1, :, 1);
-% end
-% toc;
-% save pic1Data pic1Data;
+if computeSwitch
+    %行为不同的厚度点，列为不同半径下的结果
+    pic1Data = zeros(size(H1, 2), pNum);
+    tic;
+    for i = 1: pNum
+        %fluxs(波段,厚度,接收光纤)
+        [fluxs, ic, nc, rc] = OC.idealCompute(SL, posMatrix, lambdas, H1,...
+                            U, S, r(1, i), dtheta, dphi);
+        pic1Data(:, i) = fluxs(1, :, 1);
+    end
+    toc;
+    save pic1Data pic1Data;
+end
 load pic1Data.mat;
 [colorTable, lambdaStr] = CG.generate(ro);
 %作图展示
@@ -66,17 +70,19 @@ coreDisO = 300: 100: 1000;
 pNum = size(coreDisO, 2);
 %创建保存结果的矩阵
 %行为不同的厚度点，列为不同距离下的结果
-% pic2Data = zeros(size(H1, 2), pNum);
-% tic;
-% for i = 1: pNum
-%     [s, r1] = FG.singleFiberGen(coreDisO(1, i) * 1e-6);
-%     %fluxs(波段,厚度,接收光纤)
-%     [fluxs, ic, nc, rc] = OC.idealCompute(SL, FG.posConvert(s, r1), lambdas, H1,...
-%                         U, S, R, dtheta, dphi);
-%     pic2Data(:, i) = fluxs(1, :, 1);
-% end
-% toc;
-% save pic2Data pic2Data;
+if computeSwitch
+    pic2Data = zeros(size(H1, 2), pNum);
+    tic;
+    for i = 1: pNum
+        [s, r1] = FG.singleFiberGen(coreDisO(1, i) * 1e-6);
+        %fluxs(波段,厚度,接收光纤)
+        [fluxs, ic, nc, rc] = OC.idealCompute(SL, FG.posConvert(s, r1), lambdas, H1,...
+                            U, S, R, dtheta, dphi);
+        pic2Data(:, i) = fluxs(1, :, 1);
+    end
+    toc;
+    save pic2Data pic2Data;
+end
 load pic2Data.mat;
 [colorTable, lambdaStr] = CG.generate(coreDisO);
 %作图展示
@@ -99,17 +105,19 @@ coreDis = 1e-6 * 600;
 [posMatrix] = FG.posConvert(s, r1);
 pNum = size(uo, 2);
 %创建保存结果的矩阵
-%行为不同的厚度点，列为不同出射角下的结果
-% pic3Data = zeros(size(H1, 2), pNum);
-% tic;
-% for i = 1: pNum
-%     %fluxs(波段,厚度,接收光纤)
-%     [fluxs, ic, nc, rc] = OC.idealCompute(SL, posMatrix, lambdas, H1,...
-%                         u(1, i), S, R, dtheta, dphi);
-%     pic3Data(:, i) = fluxs(1, :, 1);
-% end
-% toc;
-% save pic3Data pic3Data;
+if computeSwitch
+    %行为不同的厚度点，列为不同出射角下的结果
+    pic3Data = zeros(size(H1, 2), pNum);
+    tic;
+    for i = 1: pNum
+        %fluxs(波段,厚度,接收光纤)
+        [fluxs, ic, nc, rc] = OC.idealCompute(SL, posMatrix, lambdas, H1,...
+                            u(1, i), S, R, dtheta, dphi);
+        pic3Data(:, i) = fluxs(1, :, 1);
+    end
+    toc;
+    save pic3Data pic3Data;
+end
 load pic3Data.mat;
 [colorTable, lambdaStr] = CG.generate(uo);
 %作图展示
@@ -131,17 +139,19 @@ coreDis = 1e-6 * 600;
 [posMatrix] = FG.posConvert(s, r1);
 pNum = size(lambdao, 2);
 %创建保存结果的矩阵
-%行为不同的厚度点，列为不同波段下的结果
-% pic4Data = zeros(size(H1, 2), pNum);
-% tic;
-% for i = 1: pNum
-%     %fluxs(波段,厚度,接收光纤)
-%     [fluxs, ic, nc, rc] = OC.idealCompute(SL, posMatrix, lambdao(1, i), H1,...
-%                         U, S, R, dtheta, dphi);
-%     pic4Data(:, i) = fluxs(1, :, 1);
-% end
-% toc;
-% save pic4Data pic4Data;
+if computeSwitch
+    %行为不同的厚度点，列为不同波段下的结果
+    pic4Data = zeros(size(H1, 2), pNum);
+    tic;
+    for i = 1: pNum
+        %fluxs(波段,厚度,接收光纤)
+        [fluxs, ic, nc, rc] = OC.idealCompute(SL, posMatrix, lambdao(1, i), H1,...
+                            U, S, R, dtheta, dphi);
+        pic4Data(:, i) = fluxs(1, :, 1);
+    end
+    toc;
+    save pic4Data pic4Data;
+end
 load pic4Data.mat;
 [colorTable, lambdaStr] = CG.generate(lambdao);
 %作图展示
@@ -184,18 +194,20 @@ for i = 1: fNum
     end
 end
 %创建保存结果的矩阵
-%行为不同的厚度点，列为不同光纤组下的结果
-% pic5Data = zeros(size(H1, 2), fNum);
-% tic;
-% for i = 1: fNum
-%     %fluxs(波段,厚度,接收光纤)
-%     [fluxs, ic, nc, rc] = OC.idealCompute(SL, ...
-%                             FG.posConvert(squeeze(Tpos(i,:,:)), squeeze(Rpos(i,:,:))),...
-%                             lambdas, H1, U, S, R, dtheta, dphi);
-%     pic5Data(:, i) = sum(fluxs, 3);
-% end
-% toc;
-% save pic5Data pic5Data;
+if computeSwitch
+    %行为不同的厚度点，列为不同光纤组下的结果
+    pic5Data = zeros(size(H1, 2), fNum);
+    tic;
+    for i = 1: fNum
+        %fluxs(波段,厚度,接收光纤)
+        [fluxs, ic, nc, rc] = OC.idealCompute(SL, ...
+                                FG.posConvert(squeeze(Tpos(i,:,:)), squeeze(Rpos(i,:,:))),...
+                                lambdas, H1, U, S, R, dtheta, dphi);
+        pic5Data(:, i) = sum(fluxs, 3);
+    end
+    toc;
+    save pic5Data pic5Data;
+end
 load pic5Data.mat;
 [colorTable, lambdaStr] = CG.generate(group);
 %作图展示
@@ -222,27 +234,29 @@ ratio = 0:0.1:1;
 pNum = size(ratio, 2);
 lNum = size(lambda, 2);
 %创建保存结果的矩阵
-%波段、厚度点、不同水占比
-pic6Data = zeros(lNum, size(H, 2), pNum);
-%考虑冰和水混合情况
-BL1 = BiLayer(OT.INR, OT.INI, OT.WNR, OT.WNI, OT.ANR);
-SL1 = SingleLayer(OT.INR, OT.INI, OT.WNR);
-% tic;
-% for i = 1: pNum
-%     %水厚度
-%     Hw = H * ratio(1, i);
-%     %冰厚度
-%     Hi = H * (1 - ratio(1, i));
-%     %fluxs(波段,厚度,接收光纤)
-%     [fluxsB, ~] = OC.idealCompute(BL1, posMatrix, lambda, [Hi; Hw],...
-%                         U, S, R, dtheta, dphi);
-%     % [fluxsS, ~] = OC.idealCompute(SL1, posMatrix, lambda, Hi,...
-%     %                     U, S, R, dtheta, dphi);
-%     % pic6Data(:, :, i) = fluxsB(:, :, 1) + fluxsS(:, :, 1);
-%     pic6Data(:, :, i) = fluxsB(:, :, 1);
-% end
-% toc;
-% save pic6Data pic6Data;
+if computeSwitch
+    %波段、厚度点、不同水占比
+    pic6Data = zeros(lNum, size(H, 2), pNum);
+    %考虑冰和水混合情况
+    BL1 = BiLayer(OT.INR, OT.INI, OT.WNR, OT.WNI, OT.ANR);
+    % SL1 = SingleLayer(OT.INR, OT.INI, OT.WNR);
+    tic;
+    for i = 1: pNum
+        %水厚度
+        Hw = H * ratio(1, i);
+        %冰厚度
+        Hi = H * (1 - ratio(1, i));
+        %fluxs(波段,厚度,接收光纤)
+        [fluxsB, ~] = OC.idealCompute(BL1, posMatrix, lambda, [Hi; Hw],...
+                            U, S, R, dtheta, dphi);
+        % [fluxsS, ~] = OC.idealCompute(SL1, posMatrix, lambda, Hi,...
+        %                     U, S, R, dtheta, dphi);
+        % pic6Data(:, :, i) = fluxsB(:, :, 1) + fluxsS(:, :, 1);
+        pic6Data(:, :, i) = fluxsB(:, :, 1);
+    end
+    toc;
+    save pic6Data pic6Data;
+end
 load pic6Data.mat;
 [colorTable, lambdaStr] = CG.generate(ratio);
 %作图展示
@@ -282,27 +296,29 @@ lNum = size(lambdao, 2);
 hNum = size(H, 2);
 rNum = size(ratio, 2);
 %创建保存结果的矩阵
-%总厚度、波段、不同水占比
-% pic7Data = zeros(hNum, lNum, rNum);
-%考虑冰和水混合情况
-BL1 = BiLayer(OT.INR, OT.INI, OT.WNR, OT.WNI, OT.ANR);
-SL1 = SingleLayer(OT.INR, OT.INI, OT.WNR);
-% tic;
-% for i = 1: hNum
-%     %水厚度
-%     Hw = H(1, i) * ratio;
-%     %冰厚度
-%     Hi = H(1, i) * (1 - ratio);
-%     %fluxs(波段,厚度,接收光纤)
-%     [fluxsB, ~] = OC.idealCompute(BL1, posMatrix, lambdao, [Hi; Hw],...
-%                         U, S, R, dtheta, dphi);
-%     % [fluxsS, ~] = OC.idealCompute(SL1, posMatrix, lambdao, Hi,...
-%     %                     U, S, R, dtheta, dphi);
-%     % pic7Data(i, :, :) = fluxsB(:, :, 1) + fluxsS(:, :, 1);
-%     pic7Data(i, :, :) = fluxsB(:, :, 1);
-% end
-% toc;
-% save pic7Data pic7Data;
+if computeSwitch
+    %总厚度、波段、不同水占比
+    pic7Data = zeros(hNum, lNum, rNum);
+    %考虑冰和水混合情况
+    BL1 = BiLayer(OT.INR, OT.INI, OT.WNR, OT.WNI, OT.ANR);
+    SL1 = SingleLayer(OT.INR, OT.INI, OT.WNR);
+    tic;
+    for i = 1: hNum
+        %水厚度
+        Hw = H(1, i) * ratio;
+        %冰厚度
+        Hi = H(1, i) * (1 - ratio);
+        %fluxs(波段,厚度,接收光纤)
+        [fluxsB, ~] = OC.idealCompute(BL1, posMatrix, lambdao, [Hi; Hw],...
+                            U, S, R, dtheta, dphi);
+        % [fluxsS, ~] = OC.idealCompute(SL1, posMatrix, lambdao, Hi,...
+        %                     U, S, R, dtheta, dphi);
+        % pic7Data(i, :, :) = fluxsB(:, :, 1) + fluxsS(:, :, 1);
+        pic7Data(i, :, :) = fluxsB(:, :, 1);
+    end
+    toc;
+    save pic7Data pic7Data;
+end
 load pic7Data.mat;
 [colorTable, lambdaStr] = CG.generate(lambdao);
 %作图展示

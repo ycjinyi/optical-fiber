@@ -202,9 +202,9 @@ classdef BiLayer < OptTool
         end
 
         %该函数计算任意的发光光源和接收光纤的组合下,每个接收光纤最终接收到的光通量
-        %posMatrix为光源和接收光纤中心的距离矩阵, [a, b, c] 3个维度
-        %a为1代表距离关系，a为2代表相角关系
-        %b代表对应的发射光纤,c代表对应的接收光纤
+        %posMatrix有3个维度[a, b, c]
+        %a代表对应的发射光纤编号,b代表对应的接收光纤编号
+        %c的取值是1和2,1代表距离之间的关系,2代表角度之间的关系,注意是弧度制
         %注意所有的光源都是统一参数的
         %lambda为光源的波长(nm)
         %S为1行n列,代表n个发射光纤的光通量(lm)
@@ -230,7 +230,7 @@ classdef BiLayer < OptTool
             %先根据lambda求出下层和上层介质的折射率实部和虚部
             [obj.nr1, obj.ni1, obj.nr2, obj.ni2, obj.nr3] = obj.NCoffCompute(obj.lambda);
             %计算光源参数
-            sNumber = size(posMatrix, 2);
+            sNumber = size(posMatrix, 1);
             %将入射角度数据转换为出射角度数据
             if ~ideal
                 for i = 1: size(U, 1)
@@ -241,7 +241,7 @@ classdef BiLayer < OptTool
             end
             %分配返回值
             hNumber = size(hPoints, 2);
-            rNumber = size(posMatrix, 3);
+            rNumber = size(posMatrix, 2);
             fluxMatrix = zeros(hNumber, rNumber);
             %当前已经计算了的点数
             count = (idx - 1) * hNumber;
@@ -257,8 +257,8 @@ classdef BiLayer < OptTool
                     %每个发射光纤的等效光源位置需要更新
                     obj.d = obj.R / tan(U(2, i));
                     for j = 1: rNumber
-                        tempMatrix(i, j) = obj.fluxCompute(posMatrix(1, i, j), ...
-                            posMatrix(2, i, j), U(1, i), U(2, i), hPoints(1, H), hPoints(2, H));
+                        tempMatrix(i, j) = obj.fluxCompute(posMatrix(i, j, 1), ...
+                            posMatrix(i, j, 2), U(1, i), U(2, i), hPoints(1, H), hPoints(2, H));
                     end
                     tempMatrix(i, :) = tempMatrix(i, :)  * S(1, i) ...
                         / (pi * (power(sin(U(2, i)), 2) - power(sin(U(1, i)), 2))) ...

@@ -71,23 +71,23 @@ classdef FiberGenerator
 
         %单根发射光纤单根接收光纤的排布
         function [s, r] = singleFiberGen(~, coreDis)
-            %发射光线作为原点
+            %发射光纤作为原点
             s = [0; 0];
-            %接收光线与发射光线y坐标相同
-            r = [coreDis, coreDis; 0, 0];
+            %接收光纤与发射光纤y坐标相同
+            r = [coreDis; 0];
         end
         
         %-----------------将xy坐标转换为实际的posMatrix的函数----------------
         
         %此函数将发射光纤和接收光纤的xy坐标转换为posMatrix
         %posMatrix有3个维度[a, b, c]
-        %a的取值是1和2,1代表距离之间的关系,2代表角度之间的关系,注意是弧度制
-        %b代表对应的发射光纤编号,c代表对应的接收光纤编号
+        %a代表对应的发射光纤编号,b代表对应的接收光纤编号
+        %c的取值是1和2,1代表距离之间的关系,2代表角度之间的关系,注意是弧度制
         %s,r分别是光源和接收光纤的中心位置,2行,第1行是x坐标,第2行是y坐标
         function [posMatrix] = posConvert(obj, s, r)
             sNum = size(s, 2);
             rNum = size(r, 2);
-            posMatrix = zeros(2, sNum, rNum);
+            posMatrix = zeros(sNum, rNum, 2);
             for i = 1: sNum
                 x1 = s(1, i);
                 y1 = s(2, i);
@@ -97,9 +97,9 @@ classdef FiberGenerator
                     dx = x2 - x1;
                     dy = y2 - y1;
                     dis = sqrt(power(dx, 2) + power(dy, 2));
-                    posMatrix(1, i, j) = dis;
+                    posMatrix(i, j, 1) = dis;
                     phi = obj.phiCompute(dx, dy);
-                    posMatrix(2, i, j) = phi;
+                    posMatrix(i, j, 2) = phi;
                 end
             end
         end

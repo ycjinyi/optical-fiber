@@ -1,27 +1,6 @@
 classdef OptCompute
-%此类封装光学计算参数，并进行计算
+%此类封装计算模型, 分别考虑耦合和不耦合光源的情况
     properties
-        %网格参数
-        %dphi(rad), dtheta(rad)为网格大小
-        dphi = pi / 2000; 
-        dtheta = pi / 2000;
-        % dphi = pi / 800; 
-        % dtheta = pi / 800;
-        %光源参数
-        %最大出射平面孔径角为U(rad), 光源总的光通量为S(lm)
-        U = 30 * pi / 180;
-        S = 1e8;
-        %光纤参数
-        %接收光纤的接收半径为R(m)
-        R = 1e-6 * 187.562 / 2;
-        %光纤纤芯的折射率
-        NF = 1.445;
-        %光纤子午面内的数值孔径
-        NA = 0.37;
-        %光源到光纤平面的高度(m)
-        H = 1.5e-3;
-        %是否限制光源入射的临界角
-        CAS = true;
     end
 
     methods
@@ -30,12 +9,25 @@ classdef OptCompute
 
         %此函数用于计算设定波段范围和厚度范围内的结果，是考虑了光源的模型
         %flux是接收光纤在各个波段的响应,hPoints是对应的介质厚度变化情况
-        %SPM是光源和发射光纤之间的排布参数
-        %posMatrix是发射光纤和接收光纤之间的排布参数
+        %sourcePosMatrix是光源和发射光纤之间的排布参数
+        %posMatrix有3个维度[a, b, c]
+        %a代表对应的发射光纤编号,b代表对应的接收光纤编号
+        %c的取值是1和2,1代表距离之间的关系,2代表角度之间的关系,注意是弧度制
         %OC参数可以传入Bilayer和SingleLayer对象用于不同的计算
         %flux [a, b, c] 3维,a是波段,b是厚度点,c是接收光纤
-        function [fluxs, ic, nc, rc] = compute(obj, OC, SPM, posMatrix, lambdas, hPoints)
-            tic;
+        %hPoints是需要计算的厚度点数据
+        %H是光源到光纤平面的高度(m)
+        %V代表光源的视场角半角(rad)
+        %S代表光源的光通量(lm)
+        %R代表光纤半径(R)
+        %NA代表光纤的数值孔径
+        %NF代表光纤纤芯的折射率
+        %NS代表光源所在介质的折射率, 主要用于临界角和反射比的计算
+        %CA代表是否添加光线入射的临界角约束
+        %dphi(rad), dtheta(rad)为网格大小
+        function [fluxs, ic, nc, rc] = couplingCompute(~, OC, ...
+                sourcePosMatrix, posMatrix, lambdas, hPoints, H, V, S,...
+                R, NA, NF, NS, CA, dtheta, dphi)
             ic = 0; 
             nc = 0;
             rc = 0;
@@ -44,43 +36,23 @@ classdef OptCompute
             %厚度数目
             hNumber = size(hPoints, 2);
             %数据集合
-            rNumber = size(posMatrix, 3);
+            rNumber = size(posMatrix, 2);
             fluxs = zeros(pNumber, hNumber, rNumber);
             %需要计算的所有波段数目*厚度数目,用于输出计算进度
             points = pNumber * hNumber;
-            %不区分波段先计算光源参数
+            %计算光源参数,不需要区分波段
             LS = LightSource();
-            [flux, angle] = LS.fluxMatrixCompute(SPM, obj.H, obj.S, obj.U, obj.R, ...
-                obj.NA, obj.NF, obj.CAS, obj.dtheta, obj.dphi);
-            % % angle(1, :) = angle(1, :) * 0;
-            % % angle(2, :) = ones(1, size(angle, 2)) * 0.4887;
-            % [~, idx] = sort(SPM(1, 1, :));
-            % figure;
-            % % plot(flux(idx));
-            % plot(flux, '*');
-            % grid on;
-            % % xlabel("按距离排序后的光纤编号");
-            % xlabel("光纤编号");
-            % ylabel("光通量");
-            % figure;
-            % plot(angle(1, idx) * 180 / pi); hold on;
-            % plot(angle(2, idx) * 180 / pi);
-            % % plot(angle(1, :) * 180 / pi); hold on;
-            % % plot(angle(2, :) * 180 / pi);
-            % legend("最小入射角", "最大入射角");
-            % xlabel("按距离排序后的光纤编号");
-            % % xlabel("光纤编号");
-            % ylabel("入射角");
-            % grid on;
-            %目前去不考虑最小入射角的限制
+            [flux, angle] = LS.fluxMatrixCompute(sourcePosMatrix,...
+                H, S, V, R, NA, NF, NS, CA, dtheta, dphi);
+            %目前不考虑最小入射角的限制
             angle(1, :) = angle(1, :) * 0;
             %分波段进行计算
             for i = 1: pNumber
                 %根据出射参数计算结果
                 [fluxMatrix, ict, nct, rct] = ...
-                    OC.fluxMatrixCompute(posMatrix, lambdas(1, i), hPoints,...
-                    flux, angle, LS.nr, false, obj.R,...
-                    obj.dtheta, obj.dphi, i, points);
+                    OC.fluxMatrixCompute(posMatrix, lambdas(1, i), ...
+                    hPoints, flux, angle, NS, false, R,...
+                    dtheta, dphi, i, points);
                 %保存当前波段下计算结果
                 fluxs(i, :, :) = fluxMatrix;
                 %累加统计值
@@ -88,12 +60,13 @@ classdef OptCompute
                 nc = nc + nct;
                 rc = rc + rct;
             end
-            toc;
         end
 
         %此函数用于计算设定波段范围和厚度范围内的结果，不考虑光源耦合模型
         %flux是接收光纤在各个波段的响应,hPoints是对应的介质厚度变化情况
-        %posMatrix是光纤的排布参数
+        %posMatrix有3个维度[a, b, c]
+        %a代表对应的发射光纤编号,b代表对应的接收光纤编号
+        %c的取值是1和2,1代表距离之间的关系,2代表角度之间的关系,注意是弧度制
         %OC参数可以传入Bilayer和SingleLayer对象用于不同的计算
         %flux [a, b, c] 3维,a是波段,b是厚度点,c是接收光纤
         %R代表接收光纤的半径(m)
@@ -108,18 +81,19 @@ classdef OptCompute
             %厚度数目
             hNumber = size(hPoints, 2);
             %数据集合
-            rNumber = size(posMatrix, 3);
+            rNumber = size(posMatrix, 2);
             fluxs = zeros(pNumber, hNumber, rNumber);
             %需要计算的所有波段数目*厚度数目,用于输出计算进度
             points = pNumber * hNumber;
             %理想光源, 所有发射光纤的最小出射角为0, 最大出射角统一
-            sNumber = size(posMatrix, 2);
+            sNumber = size(posMatrix, 1);
             angle = ones(2, sNumber) * U;
             angle(1, :) = angle(1, :) * 0;
             flux = ones(1, sNumber) * S / sNumber;
             %分波段进行计算
             for i = 1: pNumber
                 %根据出射参数计算结果
+                %由于不需要考虑光源耦合,因此不需要转换角度,因而光源所在介质的折射率设置为1即可
                 [fluxMatrix, ict, nct, rct] = ...
                     OC.fluxMatrixCompute(posMatrix, lambdas(1, i), hPoints,...
                     flux, angle, 1, true, R,...
