@@ -56,7 +56,12 @@ classdef LightSource < OptTool
             %计算在光纤中的出射角
             outTheta = obj.snell(obj.NS, obj.NF, inTheta);
             %根据上述角度计算界面的反射系数
-            r = obj.ref(inTheta, outTheta);
+            %需要排除角度较小的特殊情况
+            if inTheta == 0 && outTheta == 0
+                r = power((obj.NF - obj.NS) / (obj.NF + obj.NS), 2);
+            else 
+                r = obj.ref(inTheta, outTheta);
+            end
             %计算位置x处,dxdphi下的光通量
             dFlux = cos(inTheta) * sin(inTheta) * (1 - r);
         end
@@ -72,8 +77,8 @@ classdef LightSource < OptTool
             %当目前光源和光纤之间的间距小等于光纤半径时
             if x <= obj.R
                 %方位角范围
-                kphiLower = floor((4 * pi) / obj.dphi);
-                KphiUpper = ceil((2 * pi) / obj.dphi);
+                kphiLower = floor((2 * pi) / obj.dphi);
+                KphiUpper = ceil((4 * pi) / obj.dphi);
                 %天顶角范围
                 lthetaLower = 0;
                 lthetaUpper = ceil(obj.thetaCompute(x + obj.R, H) / obj.dtheta);

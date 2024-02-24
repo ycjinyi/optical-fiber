@@ -39,6 +39,10 @@ classdef OptTool < handle
        
         %此函数根据入射角和折射角计算反射比
         function refCoff = ref(~, inTheta, outTheta)
+            %需要排除特殊情况
+            if inTheta == 0 && outTheta == 0
+                return 
+            end
             %inTheta为入射角,outTheta为折射角,refCoff为反射比
             sum = inTheta + outTheta;
             diff = inTheta - outTheta;

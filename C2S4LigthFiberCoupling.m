@@ -40,26 +40,26 @@ coreDis = 1e-6 * 600;
 [s, r1] = FG.singleFiberGen(coreDis);
 posMatrix = FG.posConvert(s, r1);
 %不同的数值孔径
-NAS = [0.2, 0.27];
+NAS = [0.2, 0.28];
 %不同的径向距离
-lightDisO = (0: 0.1: 1);
+lightDisO = (0.1: 0.1: 1);
 lightDis = 1e-3 * lightDisO;
 disNum = size(lightDis, 2);
 NANum = size(NAS, 2);
 %数值孔径、表面介质厚度、光源距离光纤的径向距离
-pic1Data = zeros(NANum, size(hPoints, 2), disNum);
-tic;
-for i = 1: NANum
-    for j = 1: disNum
-        [s1, r2] = FG.singleFiberGen(lightDis(1, j));
-        [fluxs, ~] = OC.couplingCompute(SL, FG.posConvert(s1, r2),...
-            posMatrix, lambdas, hPoints, H, V, S,...
-                R, NAS(1, i), NF, NS, true, dtheta, dphi);
-        pic1Data(i, :, j) = fluxs(1, :, 1);
-    end
-end
-toc;
-save pic1Data pic1Data;
+% pic1Data = zeros(NANum, size(hPoints, 2), disNum);
+% tic;
+% for i = 1: NANum
+%     for j = 1: disNum
+%         [s1, r2] = FG.singleFiberGen(lightDis(1, j));
+%         [fluxs, ~] = OC.couplingCompute(SL, FG.posConvert(s1, r2),...
+%             posMatrix, lambdas, hPoints, H, V, S,...
+%                 R, NAS(1, i), NF, NS, true, dtheta, dphi);
+%         pic1Data(i, :, j) = fluxs(1, :, 1);
+%     end
+% end
+% toc;
+% save pic1Data pic1Data;
 load pic1Data.mat;
 [colorTable, lambdaStr] = CG.generate(lightDisO);
 %作图展示
@@ -82,4 +82,50 @@ grid on;
 legend(lambdaStr);
 xlabel("冰厚度(mm)");
 ylabel("光通量(lm)");
-title("NA0.27 不同光源径向距离下的响应");
+title("NA0.28 不同光源径向距离下的响应");
+
+%---单光纤对,轴向距离不变,改变径向距离,最大出射孔径角、光通量随数值孔径的变化----
+%不同的数值孔径
+NAS = 0.2:0.02:0.36;
+NANum = size(NAS, 2);
+%数值孔径、光源距离光纤的径向距离，第三个维度1是光通量大小、2是最小入射角、3是最大入射角
+lightDisO = (0.01: 0.005: 1.4);
+lightDis = 1e-3 * lightDisO;
+disNum = size(lightDis, 2);
+LS = LightSource();
+% pic2Data = zeros(NANum, disNum, 3);
+% tic;
+% for i = 1: NANum
+%     for j = 1: disNum
+%         [s1, r2] = FG.singleFiberGen(lightDis(1, j));
+%         [fluxs, angle] = LS.fluxMatrixCompute(FG.posConvert(s1, r2), ...
+%                 H, S, V, R, NAS(1, i), NF, NS, true, dtheta, dphi);
+%         pic2Data(i, j, 1) = fluxs(1, 1);
+%         pic2Data(i, j, 2: 3) = angle(2, 1);
+%     end
+% end
+% toc;
+% save pic2Data pic2Data;
+load pic2Data.mat;
+[colorTable, lambdaStr] = CG.generate(NAS);
+%作图展示
+figure(3);
+for i = 1: NANum
+    plot(lightDisO, pic2Data(i, :, 1), 'Color', ...
+        [colorTable(i, :), 0.6], LineWidth=1); hold on;
+end
+grid on;
+legend(lambdaStr);
+xlabel("径向距离(mm)");
+ylabel("光通量(lm)");
+title("不同数值孔径下信号光纤接收的光通量");
+figure(4);
+for i = 1: NANum
+    plot(lightDisO, pic2Data(i, :, 3) * 180 / pi, 'Color', ...
+        [colorTable(i, :), 0.6], LineWidth=1); hold on;
+end
+grid on;
+legend(lambdaStr);
+xlabel("径向距离(mm)");
+ylabel("角度(°)");
+title("不同数值孔径下信号光纤最大入射角");
