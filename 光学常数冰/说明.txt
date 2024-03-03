@@ -1,0 +1,17 @@
+# Refractive indices of ice Ih
+#
+# Wavelengths: 0.0443 micron to 2e+6 micron @ N = 2000
+# Temperatures: T = 160 to 270 K @ delta_T = 10 K
+# 
+# References
+#  Iwabuchi, H., and P. Yang, 2011: Temperature-dependence of ice optical constants: Implications for simulating the single-scattering properties of cold ice clouds.
+#  Submitted to JQSRT.
+#
+# Contact: H. Iwabuchi (hiroiwa (at) m.tohoku.ac.jp)
+#
+# Format
+#  First column: Wavelength (um)
+#  Columns  2-13: Real part, n
+#  Columns 14-25: Imaginary part, k
+# 
+# Wavelength(um), n(160), n(170), ..., n(270), k(160), k(170), ..., k(270)

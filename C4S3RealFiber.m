@@ -1,3 +1,9 @@
+clc;
+clear;
+close all;
+
+%此脚本用于计算实际光纤排布下的响应
+
 % % angle(1, :) = angle(1, :) * 0;
 % % angle(2, :) = ones(1, size(angle, 2)) * 0.4887;
 % [~, idx] = sort(SPM(1, :, 1));

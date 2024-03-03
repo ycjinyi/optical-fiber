@@ -1,0 +1,5 @@
+%Rottgers, R. McKee, D, and Utschig, C, "Temperature and salinity correction coefficients for light absorption by water in the visible to infrared spectral region", Opt. Express, 2014;;;	
+% Data of the temperature correction coefficient for the light absorption coefficent of water	 PsiT;;;
+% s.d., standard deviation; n.d., not determined;;;	
+%remarks: Data of Fig. 5 combined with data of Reference[19];;;	
+wavelength (nm);wavenumber (1/cm);PsiT (1/m*1/K);s.d. (1/m*1/K)	
