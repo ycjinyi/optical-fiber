@@ -3,13 +3,19 @@ classdef ColorGenerator
 
     properties
         %基准颜色
-        %baseColor = [1 0 0; 0 1 0; 0 0 1; 0 1 1; 1 0 1; 1 1 0];
-        baseColor = [0 0 1; 0 1 1; 1 0 1];
+        % baseColor = [1 0 0; 0 1 0; 0 0 1; 0 1 1; 1 0 1; 1 1 0];
+        % baseColor = [0 0 1; 0 1 1; 1 0 1; 1 1 0];
+        % baseColor = [0 0 1; 0 1 1; 1 0 1];
+        baseColor;
     end
 
     methods
-        function obj = ColorGenerator()
-            %构造函数什么也不需要做
+        function obj = ColorGenerator(varargin)
+            if nargin ~= 0
+                obj.baseColor = varargin{1};
+            else 
+                obj.baseColor = [0 0 1; 0 1 1; 1 0 1];
+            end
         end
 
         %此函数根据目标数据个数产生对应的颜色表和标签
