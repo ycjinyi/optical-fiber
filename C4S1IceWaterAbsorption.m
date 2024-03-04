@@ -23,8 +23,6 @@ iceNI = linearInterpolation(iceNI, targetRange);
 
 %颜色表和标签
 CG = ColorGenerator();
-%光学计算函数
-OT = OptTool();
 
 %<<<<<<<<<<<<<<<<<<<1、266k的冰和298.15k的水的复折射率<<<<<<<<<<<<<<<<
 [colorTable, ~] = CG.generate(zeros(1, 17));
@@ -129,7 +127,7 @@ ylabel("穿透深度");
 title("冰穿透深度的温度依赖特性");
 grid on;
 
-%计算一下温度依赖特性
+%计算温度依赖特性
 iceTempDep = zeros(size(iceNITemp, 1), size(iceNITemp, 2) - 2);
 for i = 2: size(iceNITemp, 2)  - 1
     nowNI = iceNITemp(:, i);
@@ -160,7 +158,7 @@ idx = 16;
 %首先读取水的温度补偿系数,第一列为波长,第二列为波数,第三列为温度补偿系数,第四列为标准差
 waterTempCoff = importdata(strcat(nowpath, "\光学常数水\水的温度补偿系数.txt"));
 waterTempCoff = [waterTempCoff(:, 1) / 1e3, waterTempCoff(:, 3)];
-targetRange = (0.8: 0.001: 1.8)';
+targetRange = (0.65: 0.001: 1.75)';
 %首先转换为目标范围
 waterTempCoff = linearInterpolation(waterTempCoff, targetRange);
 figure(7);
@@ -168,7 +166,8 @@ plot(waterTempCoff(:, 1), waterTempCoff(:, 2), 'Color', ...
         [colorTable(idx, :), 1], LineWidth=width);
 legend("水");
 xlabel("波长(um)");
-ylabel("补偿系数(每米摄氏度)");
+xlim([0.6, 1.8]);
+ylabel("补偿系数(每米每摄氏度)");
 title("水的温度补偿系数");
 grid on;
 %读取水在293.15k的虚部数据
@@ -197,12 +196,63 @@ end
 legend(legendStr);
 % set(gca, "XScale", "log");
 set(gca, "YScale", "log");
+xlim([0.6, 1.8]);
+xlabel("波长(um)");
+ylabel("穿透深度(m)");
+% xlim([0.2, 100]);
+title("水穿透深度的温度依赖特性");
+grid on;
+%计算温度依赖特性
+waterTempDep = zeros(size(waterTemp, 1), size(waterTemp, 2) - 2);
+for i = 2: size(waterTemp, 2)  - 1
+    nowNI = waterTemp(:, i);
+    baseNI = waterTemp(:, end);
+    waterTempDep(:, i - 1) = (baseNI - nowNI) ./ baseNI /...
+    (tempRange1(1, end) - tempRange1(1, i - 1));
+end
+%作图
+figure(9);
+for i = 1: size(tempRange1, 2) - 1
+    plot(targetRange, waterTempDep(:, i), 'Color', ...
+        [colorTable(i, :), 0.6], LineWidth=width); hold on;
+end
+legend(legendStr(1, 1: end - 1));
+% set(gca, "XScale", "log");
+% set(gca, "YScale", "log");
 xlabel("波长(um)");
 ylabel("穿透深度");
 % xlim([0.2, 100]);
 title("水穿透深度的温度依赖特性");
 grid on;
 
-%<<<<<<<<<<<<<<<<<<<5、后续计算基于的水和冰的温度对应的光学常数<<<<<<<<<<<<<<<<
-
-
+%<<<<<<<<<<<<<<<<<<<5、得出第四章最终计算时的光学常数<<<<<<<<<<<<<<<<
+%水需要转换至274K
+%首先读取水的温度补偿系数,第一列为波长,第二列为波数,第三列为温度补偿系数,第四列为标准差
+waterTempCoff = importdata(strcat(nowpath, "\光学常数水\水的温度补偿系数.txt"));
+waterTempCoff = [waterTempCoff(:, 1) / 1e3, waterTempCoff(:, 3)];
+%波段点
+targetRange = (0.7: 0.005: 1.7)';
+%首先转换为目标范围
+waterTempCoff = linearInterpolation(waterTempCoff, targetRange);
+%读取水在293.15k的虚部数据
+waterNI = importdata(strcat(nowpath, "\光学常数水\293.15k\虚部.txt"));
+waterNI = linearInterpolation(waterNI, targetRange);
+%以该温度为基准, 获得从274k温度变化下的虚部数据
+%首先转换为吸收系数
+waterAbs1 = 4 * pi * waterNI(:, 2) *  1e6 ./ waterNI(:, 1);
+waterAbs2 = waterAbs1 + (274 - 293.15) * waterTempCoff(:, 2);
+%再转换回虚部数据
+waterNI(:, 2) = waterAbs2 .* waterNI(:, 1) / (4 * pi * 1e6);
+%实部数据则保持和之前一致
+waterNR = importdata(strcat(nowpath, "\光学常数水\293.15k\实部.txt"));
+waterNR = linearInterpolation(waterNR, targetRange);
+%冰266K,不需要修改,但需要提目标范围的点数
+iceNR = importdata(strcat(nowpath, "\光学常数冰\266k\实部.txt"));
+iceNR = linearInterpolation(iceNR, targetRange);
+iceNI = importdata(strcat(nowpath, "\光学常数冰\266k\虚部.txt"));
+iceNI = linearInterpolation(iceNI, targetRange);
+%空气
+airNR = ones(size(iceNR, 1), size(iceNI, 2));
+airNR(:, 1) = targetRange;
+%保存为BaseData.mat
+% save BaseData.mat airNR iceNR iceNI waterNR waterNI;
