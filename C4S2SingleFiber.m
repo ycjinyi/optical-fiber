@@ -202,5 +202,5 @@ end
 grid on;
 legend(lambdaStr);
 xlabel("波长(nm)");
-ylabel("光通量(lm)");
+ylabel("光通量之差(lm)");
 title("不同厚度下的变化趋势");
