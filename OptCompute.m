@@ -16,7 +16,7 @@ classdef OptCompute
         %OC参数可以传入Bilayer和SingleLayer对象用于不同的计算
         %flux [a, b, c] 3维,a是波段,b是厚度点,c是接收光纤
         %hPoints是需要计算的厚度点数据
-        %H是光源到光纤平面的高度(m)
+        %D是光源到光纤平面的高度(m)
         %V代表光源的视场角半角(rad)
         %S代表光源的光通量(lm)
         %R代表光纤半径(R)
@@ -26,7 +26,7 @@ classdef OptCompute
         %CA代表是否添加光线入射的临界角约束
         %dphi(rad), dtheta(rad)为网格大小
         function [fluxs, ic, nc, rc] = couplingCompute(~, OC, ...
-                sourcePosMatrix, posMatrix, lambdas, hPoints, H, V, S,...
+                sourcePosMatrix, posMatrix, lambdas, hPoints, D, V, S,...
                 R, NA, NF, NS, CA, dtheta, dphi)
             ic = 0; 
             nc = 0;
@@ -43,9 +43,10 @@ classdef OptCompute
             %计算光源参数,不需要区分波段
             LS = LightSource();
             [flux, angle] = LS.fluxMatrixCompute(sourcePosMatrix,...
-                H, S, V, R, NA, NF, NS, CA, dtheta, dphi);
+                D, S, V, R, NA, NF, NS, CA, dtheta, dphi);
             %目前不考虑最小入射角的限制
             angle(1, :) = angle(1, :) * 0;
+            angle(2, :) = ones(1, size(angle, 2)) * 0.4887;
             %分波段进行计算
             for i = 1: pNumber
                 %根据出射参数计算结果

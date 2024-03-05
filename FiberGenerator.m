@@ -156,9 +156,9 @@ classdef FiberGenerator
             R2PM = obj.posConvert(ft, fr2);
             R3PM = obj.posConvert(ft, fr3);
             %对于信号光纤而言,将光源设置为所有光纤中心位置的均值
+            SPM = obj.posConvert(mean(fs, 2), fs);
             %偏心光源
             %SPM = obj.posConvert(1e-3 * [506; 301] / obj.coff2, fs);
-            SPM = obj.posConvert(mean(fs, 2), fs);
         end
        
     end

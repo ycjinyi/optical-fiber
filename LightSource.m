@@ -193,7 +193,7 @@ classdef LightSource < OptTool
                     / (pi * power(sin(obj.U), 2)) * obj.dtheta * obj.dphi;
             %光通量直接合并为一行,为每根信号光纤接收到的所有光通量
             fluxs(1, :) = sum(tempMatrix(:, :, 1), 1);
-            %最小入射角和最大入射角直接按列取最大值和最小值
+            %最小入射角和最大入射角直接按列取最小和最大值
             angle(1, :) = min(tempMatrix(:, :, 2), [], 1);
             angle(2, :) = max(tempMatrix(:, :, 3), [], 1);
         end
