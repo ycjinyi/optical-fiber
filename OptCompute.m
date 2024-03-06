@@ -43,10 +43,10 @@ classdef OptCompute
             %计算光源参数,不需要区分波段
             LS = LightSource();
             [flux, angle] = LS.fluxMatrixCompute(sourcePosMatrix,...
-                D, S, V, R, NA, NF, NS, CA, dtheta, dphi);
+                D, S, V, R, NA, NF, NS, CA, dtheta / 5, dphi / 5);
             %目前不考虑最小入射角的限制
             angle(1, :) = angle(1, :) * 0;
-            angle(2, :) = ones(1, size(angle, 2)) * 0.4887;
+            % angle(2, :) = ones(1, size(angle, 2)) * 0.4887;
             %分波段进行计算
             for i = 1: pNumber
                 %根据出射参数计算结果

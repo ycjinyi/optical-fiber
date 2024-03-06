@@ -5,18 +5,18 @@ close all;
 %此脚本用于计算实际光纤排布下的响应并进行展示
 
 %天顶角和方位角的网格大小
-dphi = pi / 1200; 
-dtheta = pi / 720;
+dphi = pi / 960; 
+dtheta = pi / 960;
 %光源总的光通量为S(lm)
 S = 1;
 %接收光纤的接收半径为R(m)
 R = 1e-6 * 187.562 / 2;
 %光源的视场角半角V(rad)
-V = 28 * pi / 180;
+V = 15 * pi / 180;
 %是光源到光纤平面的高度(m)
-D = 3 * 1e-3;
+D = 4 * 1e-3;
 %光纤子午平面内的数值孔径
-NA = 0.35;
+NA = 0.33;
 %NF代表光纤纤芯的折射率
 NF = 1.445;
 %光源所在介质的折射率, 主要用于临界角和反射比的计算
@@ -31,7 +31,14 @@ FG = FiberGenerator();
 %c的取值是1和2,1代表距离之间的关系,2代表角度之间的关系,注意是弧度制
 [SPM, R1PM, R2PM, R3PM] = FG.realFiberGen();
 % posMatrix = [R1PM, R2PM, R3PM];
-posMatrix = [R1PM, R2PM, R3PM];
+posMatrix = [R1PM, R2PM];
+
+% check = R2PM;
+% %检查矩阵是否计算正确
+% figure;
+% plot(sort(reshape(check(4, :, 2) * 180 / pi, [1, size(check, 2)])));
+% figure;
+% plot(sort(reshape(check(4, :, 1), [1, size(check, 2)])));
 
 %设置介质层属性
 OT = OptTool();
@@ -44,17 +51,17 @@ lambdas = 890;
 % lambdas = [890, 1350, 1450, 1550];
 
 %设置介质厚度数据(m)
-H1 = (0.01: 0.01: 1) * 1e-3;
-H2 = (0.1: 0.1: 6) * 1e-3;
+H1 = (1: 1: 8) * 1e-3;
+H2 = (0.02: 0.02: 8) * 1e-3;
 
 %传入不同模型的厚度数据和波段数据进行计算
 OC = OptCompute();
 
 %光源数据展示
 % LS = LightSource();
-% [flux, angle] = LS.fluxMatrixCompute(SPM, D, S, V, R, NA, NF, NS, CA, dtheta, dphi);
-% angle(1, :) = angle(1, :) * 0;
-% angle(2, :) = ones(1, size(angle, 2)) * 0.4887;
+% [flux, angle] = LS.fluxMatrixCompute(SPM, D, S, V, R, NA, NF, NS, CA, dtheta / 5, dphi / 5);
+% % angle(1, :) = angle(1, :) * 0;
+% % angle(2, :) = ones(1, size(angle, 2)) * 0.4887;
 % [~, idx] = sort(SPM(1, :, 1));
 % figure;
 % plot(flux(idx));
@@ -72,16 +79,14 @@ OC = OptCompute();
 % xlabel("按距离排序后的光纤编号");
 % % xlabel("光纤编号");
 % ylabel("入射角");
-% grid on;
-
-
+% grid on; 
 
 tic;
 %flux[a, b, c] 3维,a是波段,b是厚度点,c是接收光纤
-% [flux, ~] = OC.couplingCompute(SL, SPM, posMatrix, lambdas, H1, D, V,...
-%                                 S, R, NA, NF, NS, CA, dtheta, dphi);
-[flux, ~] = OC.idealCompute(SL, posMatrix, ...
-               lambdas, H1, V, S, R, dtheta, dphi);
+[flux, ~] = OC.couplingCompute(SL, SPM, posMatrix, lambdas, H1, D, V,...
+                                S, R, NA, NF, NS, CA, dtheta, dphi);
+% [flux, ~] = OC.idealCompute(SL, posMatrix, ...
+%                lambdas, H1, V, S, R, dtheta, dphi);
 toc;
 
 %按照拼接时的关系对计算结果进行拆分,将对应接收光纤的光通量累计起来
@@ -116,7 +121,6 @@ title("接收光纤1");
 %set(gca, "YScale", "log");
 %xlim([0, 1e-3 * 1.2]);
 %ylim([0, 3 * 1e-7]);
-
 
 figure;
 for i = 1: size(lambdas, 2)

@@ -67,7 +67,7 @@ classdef LightSource < OptTool
         end
 
         %该函数计算光源和单根光纤之间的光通量、最小入射角、最大入射角
-        %返回以dphi(rad), dtheta(rad)为网格大小, 在厚为H(m)
+        %返回以dphi(rad), dtheta(rad)为网格大小, 在距离为H(m)
         %最大出射角度为U(rad), 光源的光通量为S(lm), 光源波长为lambda(nm)
         %信号光纤的中心位置距离光源x(m), 位于光源相角为phi(rad) 
         %半径为R(m)的条件下的接收光通量

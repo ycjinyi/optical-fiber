@@ -111,6 +111,19 @@ classdef SingleLayer < OptTool
                 nowX = obj.disCompute(inTheta, h);
                 %在x位置固定后,dphi的变化不会影响光通量的计算
                 count = 0;
+
+                % for j = kphiLower: KphiUpper
+                %     nowPhi = obj.dphi * j;
+                %     x2 = nowX * cos(nowPhi);
+                %     y2 = nowX * sin(nowPhi);
+                %     dis = power(x1 - x2, 2) + power(y1 - y2, 2);
+                %     %不在光纤接收范围内直接跳过
+                %     if dis > power(obj.R, 2)
+                %         continue;
+                %     end  
+                %     count = count + 1;
+                % end
+
                 %查找在接收范围内的下界
                 l = kphiLower;
                 r = KphiUpper;
@@ -138,6 +151,7 @@ classdef SingleLayer < OptTool
                 if k1 <= k2
                     count = k2 - k1 + 1;
                 end
+
                 if count > 0
                     obj.incluCount = obj.incluCount + count;
                     obj.ncaluCount = obj.ncaluCount + 1;
