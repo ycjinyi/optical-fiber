@@ -30,11 +30,8 @@ classdef BiLayer < OptTool
         %dx(m),dphi(rad)代表网格的大小
         dx;
         dphi;
-        %加快计算的集合,rMap用于光通量求解,tMap用于角度求解
+        %加快计算的集合,rMap用于光通量求解
         rMap;
-        tMap;
-        %是否限制临界角
-        CA;
 
         %-----计算时的统计数据-----
         %包含的点数
@@ -59,12 +56,6 @@ classdef BiLayer < OptTool
         %根据距离x、下层厚度H1、上层厚度H2、下层折射率NR1、上层折射率NR2
         %求上下层介质界面的入射角度和折射角度
         function [inTheta, outTheta] = thetaCompute(obj, x, H1, H2, NR1, NR2)
-            if isKey(obj.tMap, x)
-                thetas = obj.tMap(x);
-                inTheta = thetas(1, 1);
-                outTheta = thetas(1, 2);
-                return;
-            end
             %二分查找
             lower = 0;
             upper = pi / 2;
@@ -84,11 +75,10 @@ classdef BiLayer < OptTool
             end
             inTheta = (lower + upper) / 2;
             outTheta = obj.snell(NR1, NR2, inTheta);
-            obj.tMap(x) = [inTheta, outTheta];
         end
 
         %此函数根据H1,H2,inTheta求距离x
-        function x = disCompute(~, H1, H2, inTheta)
+        function x = disCompute(obj, H1, H2, inTheta)
             outTheta = obj.snell(obj.nr1, obj.nr2, inTheta);
             x = 2 * (H1 * tan(inTheta) + H2 * tan(outTheta));
         end
@@ -160,8 +150,8 @@ classdef BiLayer < OptTool
                 %计算当前距离下的入射角和折射角
                 [inTheta, outTheta] = obj.thetaCompute(nowX, H1, H2, obj.nr1, obj.nr2);
                 %在x位置固定后,dphi的变化不会影响光通量的计算
-                %但是可能处于临界角度之外
                 count = 0;
+
                 for j = kphiLower: 1: KphiUpper
                     nowPhi = obj.dphi * j;
                     x2 = nowX * cos(nowPhi);
@@ -170,16 +160,37 @@ classdef BiLayer < OptTool
                     if dis > power(obj.R, 2)
                         continue;
                     end
-                    if obj.CA == true
-                        %计算临界角
-                        theta = obj.criticalAngle(x, obj.R, nowPhi - phi, obj.nr1, obj.NA);
-                        %超过临界角直接跳过
-                        if inTheta > theta
-                            continue;
-                        end
-                    end
                     count = count + 1;
                 end
+
+                % %查找在接收范围内的下界
+                % l = kphiLower;
+                % r = KphiUpper;
+                % while l < r
+                %     j = floor((l + r) / 2);
+                %     if obj.acJudg(x1, y1, obj.R, nowX, obj.dphi * j)
+                %         r = j;
+                %     else 
+                %         l = j + 1;
+                %     end
+                % end
+                % k1 = l;
+                % %查找在接收范围内的上界
+                % l = kphiLower;
+                % r = KphiUpper;
+                % while l < r
+                %     j = ceil((l + r) / 2);
+                %     if obj.acJudg(x1, y1, obj.R, nowX, obj.dphi * j)
+                %         l = j;
+                %     else 
+                %         r = j - 1;
+                %     end
+                % end
+                % k2 = l;
+                % if k1 <= k2
+                %     count = k2 - k1 + 1;
+                % end
+                
                 if count > 0
                     obj.incluCount = obj.incluCount + count;
                     obj.ncaluCount = obj.ncaluCount + 1;
@@ -209,26 +220,25 @@ classdef BiLayer < OptTool
         %fluxMatrix的列数为接收光纤的个数,行数为不同介质厚度组合下的结果
         %idx表示当前计算的波段序号, points代表所有需要计算的波段数目*厚度数目,用于输出计算进度
         function [fluxMatrix, ic, nc, rc] = fluxMatrixCompute(obj, posMatrix, lambda,...
-                hPoints, S, U,  n, R, NF, NA, CA, dx, dphi, idx, points)
+                hPoints, S, U,  n, R, dx, dphi, idx, points, ideal)
             obj.incluCount = 0;
             obj.ncaluCount = 0;
             obj.rcaluCount = 0;
             %首先根据传入的参数设置计算时需要的参数
             obj.lambda = lambda;
             obj.R = R;
-            obj.NF = NF;
-            obj.NA = NA;
-            obj.CA = CA;
             obj.dx = dx;
             obj.dphi = dphi;
             %先根据lambda求出下层和上层介质的折射率实部和虚部
             [obj.nr1, obj.ni1, obj.nr2, obj.ni2, obj.nr3] = obj.NCoffCompute(obj.lambda);
             %计算光源参数
             sNumber = size(posMatrix, 2);
-            %将入射角度数据转换为出射角度数据
-            for i = 1: size(U, 1)
-                for j = 1: size(U, 2)
-                    U(i, j) = obj.snell(n, obj.nr1, U(i, j));
+            if ~ideal
+                %将入射角度数据转换为出射角度数据
+                for i = 1: size(U, 1)
+                    for j = 1: size(U, 2)
+                        U(i, j) = obj.snell(n, obj.nr1, U(i, j));
+                    end
                 end
             end
             %分配返回值
@@ -242,11 +252,13 @@ classdef BiLayer < OptTool
                 %计算数据只在相同波段下的相同厚度下生效，厚度变化后将失效
                 %因此在每次计算前需要重置
                 obj.rMap = containers.Map("KeyType", 'double', "ValueType", 'double');
-                obj.tMap = containers.Map("KeyType", 'double', "ValueType", 'any');
                 %临时保存结果的矩阵
                 tempMatrix = zeros(sNumber, rNumber);
                 %计算发射光纤和接收光纤两两之间的响应
                 for i = 1: sNumber
+                    if S(1, i) == 0
+                        continue;
+                    end
                     for j = 1: rNumber
                         tempMatrix(i, j) = obj.fluxCompute(posMatrix(1, i, j), ...
                             posMatrix(2, i, j), U(1, i), U(2, i), hPoints(1, H), hPoints(2, H));

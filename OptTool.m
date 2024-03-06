@@ -105,5 +105,16 @@ classdef OptTool < handle
             theta = asin(NA / (n * coff));
         end
 
+        %该函数用于判断离散点是否存在于光纤接收范围内
+        %x1, y1为当前光纤纤芯的坐标位置
+        %r为光纤半径
+        %nowX, nowPhi为当前离散点的位置
+        function [contains] = acJudg(~, x1, y1, r, nowX, nowPhi)
+            x2 = nowX * cos(nowPhi);
+            y2 = nowX * sin(nowPhi);
+            dis = power(x1 - x2, 2) + power(y1 - y2, 2);
+            contains = dis <= power(r, 2);
+        end
+
     end
 end

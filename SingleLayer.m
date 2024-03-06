@@ -18,17 +18,11 @@ classdef SingleLayer < OptTool
         nr2;
         %接收光纤的半径(m)
         R;
-        %光纤纤芯的折射率
-        NF;
-        %光纤子午面内的数值孔径
-        NA;
         %dx(m),dphi(rad)代表网格的大小
         dx;
         dphi;
         %加快计算的集合
         rMap;
-        %是否限制临界角
-        CA;
 
         %-----计算时的统计数据-----
         %包含的点数
@@ -117,24 +111,45 @@ classdef SingleLayer < OptTool
                 %在x位置固定后,dphi的变化不会影响光通量的计算
                 %但是可能处于临界角度之外
                 count = 0;
-                for j = kphiLower: 1: KphiUpper
-                    nowPhi = obj.dphi * j;
-                    x2 = nowX * cos(nowPhi);
-                    y2 = nowX * sin(nowPhi);
-                    dis = power(x1 - x2, 2) + power(y1 - y2, 2);
-                    if dis > power(obj.R, 2)
-                        continue;
+                % for j = kphiLower: 1: KphiUpper
+                %     nowPhi = obj.dphi * j;
+                %     x2 = nowX * cos(nowPhi);
+                %     y2 = nowX * sin(nowPhi);
+                %     dis = power(x1 - x2, 2) + power(y1 - y2, 2);
+                %     if dis > power(obj.R, 2)
+                %         continue;
+                %     end
+                %     count = count + 1;
+                % end
+
+                %查找在接收范围内的下界
+                l = kphiLower;
+                r = KphiUpper;
+                while l < r
+                    j = floor((l + r) / 2);
+                    if obj.acJudg(x1, y1, obj.R, nowX, obj.dphi * j)
+                        r = j;
+                    else 
+                        l = j + 1;
                     end
-                    if obj.CA == true
-                        %计算临界角
-                        theta = obj.criticalAngle(x, obj.R, nowPhi - phi, obj.nr1, obj.NA);
-                        %超过临界角直接跳过
-                        if inTheta > theta
-                            continue;
-                        end
-                    end
-                    count = count + 1;
                 end
+                k1 = l;
+                %查找在接收范围内的上界
+                l = kphiLower;
+                r = KphiUpper;
+                while l < r
+                    j = ceil((l + r) / 2);
+                    if obj.acJudg(x1, y1, obj.R, nowX, obj.dphi * j)
+                        l = j;
+                    else 
+                        r = j - 1;
+                    end
+                end
+                k2 = l;
+                if k1 <= k2
+                    count = k2 - k1 + 1;
+                end
+                
                 if count > 0
                     obj.incluCount = obj.incluCount + count;
                     obj.ncaluCount = obj.ncaluCount + 1;
@@ -165,26 +180,25 @@ classdef SingleLayer < OptTool
         %fluxMatrix的列数为接收光纤的个数,行数为上层厚度的情况数目
         %idx表示当前计算的波段序号, points代表所有需要计算的波段数目*厚度数目,用于输出计算进度
         function [fluxMatrix, ic, nc, rc] = fluxMatrixCompute(obj, posMatrix,...
-                lambda, hPoints, S, U, n, R, NF, NA, CA, dx, dphi, idx, points)
+                lambda, hPoints, S, U, n, R, dx, dphi, idx, points, ideal)
             obj.incluCount = 0;
             obj.ncaluCount = 0;
             obj.rcaluCount = 0;
             %首先根据传入的参数设置计算时需要的参数
             obj.lambda = lambda;
             obj.R = R;
-            obj.NF = NF;
-            obj.NA = NA;
-            obj.CA = CA;
             obj.dx = dx;
             obj.dphi = dphi;
             %计算光源的参数
             sNumber = size(posMatrix, 2);
             %先根据lambda求出介质的折射率实部和虚部
             [obj.nr1, obj.ni1, obj.nr2] = obj.NCoffCompute(obj.lambda);
-            %将入射角度数据转换为出射角度数据
-            for i = 1: size(U, 1)
-                for j = 1: size(U, 2)
-                    U(i, j) = obj.snell(n, obj.nr1, U(i, j));
+            if ~ideal
+                %将入射角度数据转换为出射角度数据
+                for i = 1: size(U, 1)
+                    for j = 1: size(U, 2)
+                        U(i, j) = obj.snell(n, obj.nr1, U(i, j));
+                    end
                 end
             end
             %分配返回值
@@ -202,6 +216,9 @@ classdef SingleLayer < OptTool
                 tempMatrix = zeros(sNumber, rNumber);
                 %计算发射光纤和接收光纤两两之间的响应
                 for i = 1: sNumber
+                    if S(1, i) == 0
+                        continue;
+                    end
                     for j = 1: rNumber
                         tempMatrix(i, j) = obj.fluxCompute(posMatrix(1, i, j), ...
                             posMatrix(2, i, j), U(1, i), U(2, i), hPoints(1, H));

@@ -4,6 +4,7 @@ classdef ColorGenerator
     properties
         %基准颜色
         %baseColor = [1 0 0; 0 1 0; 0 0 1; 0 1 1; 1 0 1; 1 1 0];
+        % baseColor = [0 0 1; 0 1 1; 1 0 1];
         baseColor = [0 0 1; 0 1 1; 1 0 1];
     end
 
