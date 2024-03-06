@@ -219,6 +219,10 @@ classdef SingleLayer < OptTool
                 tempMatrix = zeros(sNumber, rNumber);
                 %计算发射光纤和接收光纤两两之间的响应
                 for i = 1: sNumber
+                    %跳过光源光通量为0的发光光纤
+                    if S(1, i) == 0
+                        continue;
+                    end
                     %每个发射光纤的等效光源位置需要更新
                     obj.d = obj.R / tan(U(2, i));
                     for j = 1: rNumber
