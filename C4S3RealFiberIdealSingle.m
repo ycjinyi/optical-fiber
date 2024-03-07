@@ -40,15 +40,17 @@ OC = OptCompute();
 
 %颜色表和标签
 CG = ColorGenerator();
-[colorTable, lambdaStr] = CG.generate(lambdas);
-colorPen = 0.85;
+[~, lambdaStr] = CG.generate(lambdas);
+[colorTable, ~] = CG.generate(ones(1, 38));
+colorPen = 0.9;
+coff = 9;
 
 load 2024030601.mat;
 
 figure(1);
 for i = 1: size(lambdas, 2)
-    plot(H1 * 1e3, flux1(i, :), 'Color', ...
-        [colorTable(i, :), colorPen], LineWidth=1); hold on;
+    plot(H1 * 1e3, flux1(i, :) + 1e-7, 'Color', ...
+        [colorTable(i * coff, :), colorPen], LineWidth=1); hold on;
 end
 grid on;
 legend(lambdaStr);
@@ -57,11 +59,12 @@ xlabel("冰厚度(mm)");
 ylabel("光通量(lm)");
 xlim([0, 10]);
 ylim([0, 1.5* 1e-5]);
+set(gca, "YScale", "log");
 
 figure(2);
 for i = 1: size(lambdas, 2)
-    plot(H2 * 1e3, flux2(i, :), 'Color', ...
-        [colorTable(i, :), colorPen], LineWidth=1); hold on;
+    plot(H2 * 1e3, flux2(i, :)  + 1e-7, 'Color', ...
+        [colorTable(i * coff, :), colorPen], LineWidth=1); hold on;
 end
 grid on;
 legend(lambdaStr);
@@ -70,11 +73,12 @@ xlabel("冰厚度(mm)");
 ylabel("光通量(lm)");
 xlim([0, 10]);
 ylim([0, 1.5* 1e-5]);
+set(gca, "YScale", "log");
 
 figure(3);
 for i = 1: size(lambdas, 2)
-    plot(H3 * 1e3, flux3(i, :), 'Color', ...
-        [colorTable(i, :), colorPen], LineWidth=1); hold on;
+    plot(H3 * 1e3, flux3(i, :)  + 1e-7, 'Color', ...
+        [colorTable(i * coff, :), colorPen], LineWidth=1); hold on;
 end
 grid on;
 legend(lambdaStr);
@@ -83,3 +87,4 @@ xlabel("冰厚度(mm)");
 ylabel("光通量(lm)");
 xlim([0, 10]);
 ylim([0, 1.5* 1e-5]);
+set(gca, "YScale", "log");
