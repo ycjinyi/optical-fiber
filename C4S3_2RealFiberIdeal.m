@@ -54,29 +54,28 @@ for i = 1: H1Num
     end
 end
 
-%传入不同模型的厚度数据和波段数据进行计算
-OC = OptCompute();
-
-tic;
-%flux[a, b, c] 3维,a是波段,b是厚度点,c是接收光纤
-[flux, ~] = OC.idealCompute(BL, posMatrix, ...
-               lambdas, H, U, S, R, dtheta, dphi);
-toc;
-
-
-flux1 = sum(flux, 3);
-
-%将数据再转换为网格形式
-Z = zeros(pNum, size(X, 1), size(X, 2));
-for i = 1: pNum
-    for j = 1: H1Num
-        for k = 1: H2Num
-            Z(i, k, j) = flux1(i, (j - 1) * H2Num + k);
-        end
-    end
-end
-
-save 2024030701.mat R1PM BL lambdas H1 H2 H flux X Y Z;
+% %传入不同模型的厚度数据和波段数据进行计算
+% OC = OptCompute();
+% 
+% tic;
+% %flux[a, b, c] 3维,a是波段,b是厚度点,c是接收光纤
+% [flux, ~] = OC.idealCompute(BL, posMatrix, ...
+%                lambdas, H, U, S, R, dtheta, dphi);
+% toc;
+% 
+% 
+% flux1 = sum(flux, 3);
+% 
+% %将数据再转换为网格形式
+% Z = zeros(pNum, size(X, 1), size(X, 2));
+% for i = 1: pNum
+%     for j = 1: H1Num
+%         for k = 1: H2Num
+%             Z(i, k, j) = flux1(i, (j - 1) * H2Num + k);
+%         end
+%     end
+% end
+% save 2024030701.mat R1PM BL lambdas H1 H2 H flux X Y Z;
 
 load 2024030701.mat
 
@@ -85,7 +84,12 @@ z2 = squeeze(Z(2, :, :));
 z3 = squeeze(Z(3, :, :));
 z4 = squeeze(Z(4, :, :));
 
-level = 10;
+% span = 0.05;
+% [fitresult1, ~] = surfFit(X, Y, z1, span);
+% [fitresult2, ~] = surfFit(X, Y, z2, span);
+
+% save 2024030701-1.mat fitresult1 fitresult2;
+load 2024030701-1.mat;
 
 %颜色表和标签
 CG = ColorGenerator();
@@ -94,43 +98,52 @@ CG = ColorGenerator();
 X1 = X * 1e3;
 Y1 = Y * 1e3;
 
-figure;  
+lim = [0, 6];
+
+al = 0.9;
+
+figure;
 %对z1进行拟合
-[fitresult, ~] = surfFit(X, Y, z1);
-[C,h] = contour(X1, Y1, 1e3 * fitresult(X, Y), level, 'LineWidth', 0.9, 'ShowText', 'on');
+pcolor(X1, Y1, 1e3 * fitresult1(X, Y));
+shading interp;
 colormap(colorTable);
 xlabel("冰厚(mm)");
 ylabel("水厚(mm)");
+xlim(lim);
+ylim(lim);
 title("890nm");
-h.LevelList=round(h.LevelList,1);
-clabel(C,h,'LabelSpacing',270);
+colorbar;
 
-figure;  
+figure;
 %对z2进行拟合
-[fitresult, ~] = surfFit(X, Y, z2);
-[C,h] = contour(X1, Y1, 1e3 * fitresult(X, Y), level, 'LineWidth', 0.9, 'ShowText', 'on'); 
+pcolor(X1, Y1, 1e3 * fitresult2(X, Y));
+shading interp;
 colormap(colorTable);
 xlabel("冰厚(mm)");
 ylabel("水厚(mm)");
+xlim(lim);
+ylim(lim);
 title("1350nm");
-h.LevelList=round(h.LevelList,1);
-clabel(C,h,'LabelSpacing',270);
+colorbar;
 
-figure;  
-[C,h] = contour(X1, Y1, 1e3 * z3, level, 'LineWidth', 0.9, 'ShowText', 'on'); 
+figure;
+pcolor(X1, Y1, 1e3 * z3);
+shading interp;
 colormap(colorTable);
 xlabel("冰厚(mm)");
 ylabel("水厚(mm)");
+xlim(lim);
+ylim(lim);
 title("1450nm");
-h.LevelList=round(h.LevelList,1);
-clabel(C,h,'LabelSpacing',270);
+colorbar;
 
-figure;  
-% 绘制等高线图
-[C,h] = contour(X1, Y1, 1e3 * z4, level, 'LineWidth', 0.9, 'ShowText', 'on');
+figure;
+pcolor(X1, Y1, 1e3 * z4);
+shading interp;
 colormap(colorTable);
 xlabel("冰厚(mm)");
 ylabel("水厚(mm)");
+xlim(lim);
+ylim(lim);
 title("1550nm");
-h.LevelList=round(h.LevelList,1);
-clabel(C,h,'LabelSpacing',270);
+colorbar;

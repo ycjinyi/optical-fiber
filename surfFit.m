@@ -1,4 +1,4 @@
-function [fitresult, gof] = surfFit(X, Y, Z)
+function [fitresult, gof] = surfFit(X, Y, Z, span)
 
 %创建一个拟合
 [xData, yData, zData] = prepareSurfaceData(X, Y, Z);
@@ -7,7 +7,7 @@ function [fitresult, gof] = surfFit(X, Y, Z)
 ft = fittype( 'loess' );
 opts = fitoptions( 'Method', 'LowessFit' );
 opts.Normalize = 'on';
-opts.Span = 0.35;
+opts.Span = span;
 
 % 对数据进行模型拟合。
 [fitresult, gof] = fit([xData, yData], zData, ft, opts);

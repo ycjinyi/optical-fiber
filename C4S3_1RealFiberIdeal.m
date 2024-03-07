@@ -110,7 +110,7 @@ Y1 = Y * 1e3;
 
 figure;  
 %对z1进行拟合
-[fitresult, ~] = surfFit(X, Y, z1);
+[fitresult, ~] = surfFit(X, Y, z1, 0.35);
 [C,h] = contour(X1, Y1, 1e3 * fitresult(X, Y), level, 'LineWidth', 0.9, 'ShowText', 'on');
 colormap(colorTable);
 xlabel("冰厚(mm)");
@@ -122,7 +122,7 @@ clabel(C,h,'LabelSpacing',270);
 
 figure;  
 %对z2进行拟合
-[fitresult, ~] = surfFit(X, Y, z2);
+[fitresult, ~] = surfFit(X, Y, z2, 0.55);
 [C,h] = contour(X1, Y1, 1e3 * fitresult(X, Y), level, 'LineWidth', 0.9, 'ShowText', 'on'); 
 colormap(colorTable);
 xlabel("冰厚(mm)");
