@@ -101,60 +101,57 @@ z4 = squeeze(Z(4, :, :));
 level = 10;
 
 
-%颜色表和标签
-CG = ColorGenerator();
-[colorTable, ~] = CG.generate(ones(1, 100));
-
 X1 = X * 1e3;
 Y1 = Y * 1e3;
 
-figure;  
+flux1 = sum(flux, 3);
+
+figure(1);
 %对z1进行拟合
-[fitresult, ~] = surfFit(X, Y, z1, 0.35);
+[fitresult, ~] = surfFit(H(1, :)', H(2, :)', flux1(1, :)', 0.35);
 [C,h] = contour(X1, Y1, 1e3 * fitresult(X, Y), level, 'LineWidth', 0.9, 'ShowText', 'on');
-colormap(colorTable);
+colormap("cool");
 xlabel("冰厚(mm)");
 ylabel("水厚(mm)");
 title("890nm");
-h.LevelList=round(h.LevelList,1);
+h.LevelList = round(h.LevelList,1);
 clabel(C,h,'LabelSpacing',270);
 
 
-figure;  
+figure(2);
 %对z2进行拟合
-[fitresult, ~] = surfFit(X, Y, z2, 0.55);
+[fitresult, ~] = surfFit(H(1, :)', H(2, :)', flux1(2, :)', 0.55);
 [C,h] = contour(X1, Y1, 1e3 * fitresult(X, Y), level, 'LineWidth', 0.9, 'ShowText', 'on'); 
-colormap(colorTable);
+colormap("cool");
 xlabel("冰厚(mm)");
 ylabel("水厚(mm)");
 title("1350nm");
-h.LevelList=round(h.LevelList,1);
+h.LevelList = round(h.LevelList,1);
 clabel(C,h,'LabelSpacing',270);
 % colorbar;
 
-figure;  
+figure(3);
 [C,h] = contour(X1, Y1, 1e3 * z3, level, 'LineWidth', 0.9, 'ShowText', 'on'); 
-colormap(colorTable);
+colormap("cool");
 xlabel("冰厚(mm)");
 ylabel("水厚(mm)");
 title("1450nm");
-h.LevelList=round(h.LevelList,1);
+h.LevelList = round(h.LevelList,1);
 clabel(C,h,'LabelSpacing',270);
 % colorbar;
 
-figure;  
+figure(4);
 % 绘制等高线图
 [C,h] = contour(X1, Y1, 1e3 * z4, level, 'LineWidth', 0.9, 'ShowText', 'on');
-colormap(colorTable);
+colormap("cool");
 xlabel("冰厚(mm)");
 ylabel("水厚(mm)");
 title("1550nm");
-h.LevelList=round(h.LevelList,1);
+h.LevelList = round(h.LevelList,1);
 % clabel(C, h,'fontsize',9,'color','b','rotation',0)
 clabel(C,h,'LabelSpacing',270);
 % colorbar;
 % grid on;
-
 
 % set(gca, 'Box', 'off', ...                                        % 边框
 %          'LineWidth', 1,...                                       % 线宽

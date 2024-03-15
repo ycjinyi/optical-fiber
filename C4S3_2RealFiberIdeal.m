@@ -84,12 +84,14 @@ z2 = squeeze(Z(2, :, :));
 z3 = squeeze(Z(3, :, :));
 z4 = squeeze(Z(4, :, :));
 
-% span = 0.05;
-% [fitresult1, ~] = surfFit(X, Y, z1, span);
-% [fitresult2, ~] = surfFit(X, Y, z2, span);
+flux1 = sum(flux, 3);
 
-% save 2024030701-1.mat fitresult1 fitresult2;
-load 2024030701-1.mat;
+span = 0.05;
+% [fitresult1, ~] = surfFit(H(1, :)', H(2, :)', flux1(1, :)', span);
+% [fitresult2, ~] = surfFit(H(1, :)', H(2, :)', flux1(2, :)', span);
+% 
+% save 2024031501.mat fitresult1 fitresult2;
+load 2024031501.mat;
 
 %颜色表和标签
 CG = ColorGenerator();
@@ -101,12 +103,15 @@ Y1 = Y * 1e3;
 lim = [0, 6];
 
 al = 0.9;
+level = 10;
 
 figure;
-%对z1进行拟合
+% [C,h] = contourf(X1, Y1, 1e3 * fitresult1(X, Y), level, 'LineWidth', 0.9, 'ShowText', 'on');
+% h.LevelList = round(h.LevelList, 1);
+% clabel(C,h, 'LabelSpacing', 270);
 pcolor(X1, Y1, 1e3 * fitresult1(X, Y));
 shading interp;
-colormap(colorTable);
+colormap("cool");
 xlabel("冰厚(mm)");
 ylabel("水厚(mm)");
 xlim(lim);
@@ -115,10 +120,12 @@ title("890nm");
 colorbar;
 
 figure;
-%对z2进行拟合
+% [C,h] = contourf(X1, Y1, 1e3 * fitresult2(X, Y), level, 'LineWidth', 0.9, 'ShowText', 'on');
+% h.LevelList = round(h.LevelList, 1);
+% clabel(C,h, 'LabelSpacing', 270);
 pcolor(X1, Y1, 1e3 * fitresult2(X, Y));
 shading interp;
-colormap(colorTable);
+colormap("cool");
 xlabel("冰厚(mm)");
 ylabel("水厚(mm)");
 xlim(lim);
@@ -127,9 +134,12 @@ title("1350nm");
 colorbar;
 
 figure;
+% [C,h] = contourf(X1, Y1, 1e3 * z3, level, 'LineWidth', 0.9, 'ShowText', 'on');
+% h.LevelList = round(h.LevelList, 1);
+% clabel(C,h, 'LabelSpacing', 270);
 pcolor(X1, Y1, 1e3 * z3);
 shading interp;
-colormap(colorTable);
+colormap("cool");
 xlabel("冰厚(mm)");
 ylabel("水厚(mm)");
 xlim(lim);
@@ -138,9 +148,12 @@ title("1450nm");
 colorbar;
 
 figure;
+% [C,h] = contourf(X1, Y1, 1e3 * z4, level, 'LineWidth', 0.9, 'ShowText', 'on');
+% h.LevelList = round(h.LevelList, 1);
+% clabel(C,h, 'LabelSpacing', 270);
 pcolor(X1, Y1, 1e3 * z4);
 shading interp;
-colormap(colorTable);
+colormap("cool");
 xlabel("冰厚(mm)");
 ylabel("水厚(mm)");
 xlim(lim);
