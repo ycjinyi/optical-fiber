@@ -9,7 +9,7 @@ classdef OptCompute
         % dx = 5e-5;
         %光源参数
         %最大出射角度为U(rad), 光源总的光通量为S(lm)
-        U = 25 * pi / 180;
+        U = 20 * pi / 180;
         S = 1;
         %光纤参数
         %接收光纤的接收半径为R(m)
