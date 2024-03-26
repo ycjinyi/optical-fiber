@@ -8,14 +8,16 @@ close all;
 load BaseData.mat;
 
 %波段范围，单位nm
-b = 21;
+b = 1;
 iceNI = iceNI(b: end, :);
 iceNR = iceNR(b: end, :);
 waterNI = waterNI(b: end, :);
 waterNR = waterNR(b: end, :);
 airNR = airNR(b: end, :);
 
-targetRange = waterNR(:, 1) * 1000;
+
+
+targetRange = waterNR(:, 1);
 
 %颜色表和标签
 CG = ColorGenerator();
@@ -31,11 +33,12 @@ plot(targetRange, waterNR(:, 2), 'Color', ...
 plot(targetRange, iceNR(:, 2), 'Color', ...
         [colorTable(eidx, :), 0.6], LineWidth=1);
 legend("水", "冰");
-% set(gca, "YScale", "log");
+set(gca, "YScale", "log");
+set(gca, "XScale", "log");
 xlabel("波长(um)");
+xlim([0.2, 100]);
 ylabel("折射率实部");
 title("冰水的折射率实部");
-xlim([800, 1700]);
 grid on;
 
 %----------------------------冰水的折射率虚部-------------------------------
@@ -46,10 +49,11 @@ plot(targetRange, iceNI(:, 2), 'Color', ...
         [colorTable(eidx, :), 0.6], LineWidth=1);
 legend("水", "冰");
 set(gca, "YScale", "log");
+set(gca, "XScale", "log");
 xlabel("波长(um)");
 ylabel("折射率虚部");
+xlim([0.2, 100]);
 title("冰水的折射率虚部");
-xlim([800, 1700]);
 grid on;
 
 % %计算冰和水随波段变化的吸收距离和比值
@@ -94,8 +98,14 @@ refW2A = zeros(lambdaNum, thetaNum);
 %-------------------不同波段从冰到水的反射比随入射角的变化--------------------
 for j = 1: lambdaNum
     for i = 1: thetaNum
-        refI2W(j, i) = OT.ref(inTheta(1, i), OT.snell(iceNRList(1, j), ...
-            waterNRList(1, j), inTheta(1, i)));
+        n1 = iceNRList(1, j);
+        n2 = waterNRList(1, j);
+        if inTheta(1, i) == 0
+            refI2W(j, i) = power((n1 - n2) / (n1 + n2), 2);
+            continue;
+        end 
+        refI2W(j, i) = OT.ref(inTheta(1, i), OT.snell(n1, ...
+            n2, inTheta(1, i)));
     end
 end
 
@@ -111,11 +121,20 @@ ylabel("反射比");
 title("从冰进入水中");
 grid on;
 
+% inThetaO = inThetaO';
+% refI2W = refI2W';
+
 %-------------------不同波段从水到空气的反射比随入射角的变化-------------------
 for j = 1: lambdaNum
     for i = 1: thetaNum
-        refW2A(j, i) = OT.ref(inTheta(1, i), OT.snell(waterNRList(1, j), ...
-            airNRList(1, j), inTheta(1, i)));
+        n1 = waterNRList(1, j);
+        n2 = airNRList(1, j);
+        if inTheta(1, i) == 0
+            refW2A(j, i) = power((n1 - n2) / (n1 + n2), 2);
+            continue;
+        end 
+        refW2A(j, i) = OT.ref(inTheta(1, i), OT.snell(n1, ...
+            n2, inTheta(1, i)));
     end
 end
 
@@ -130,3 +149,6 @@ xlabel("入射角");
 ylabel("反射比");
 title("从水进入空气中");
 grid on;
+
+inThetaO = inThetaO';
+refW2A = refW2A';

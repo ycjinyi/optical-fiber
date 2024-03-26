@@ -41,7 +41,8 @@ classdef OptTool < handle
         function refCoff = ref(~, inTheta, outTheta)
             %需要排除特殊情况
             if inTheta == 0 && outTheta == 0
-                return 
+                refCoff = 0;
+                return;
             end
             %inTheta为入射角,outTheta为折射角,refCoff为反射比
             sum = inTheta + outTheta;
