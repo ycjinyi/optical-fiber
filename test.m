@@ -1,6 +1,12 @@
 clc;
 clear;
 
+%创建颜色
+%颜色表和标签
+CG = ColorGenerator();
+[colorTable, lambdaStr] = CG.generate(zeros(1, 6));
+
+
 %获取光纤排布参数
 FG = FiberGenerator();
 % [s, r1, r2] = FG.regFiberGen(1e-3 * 0.227, 6);
