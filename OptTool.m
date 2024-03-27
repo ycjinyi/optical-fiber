@@ -44,6 +44,10 @@ classdef OptTool < handle
                 refCoff = 0;
                 return;
             end
+            if outTheta >= pi / 2
+                refCoff = 1;
+                return;
+            end
             %inTheta为入射角,outTheta为折射角,refCoff为反射比
             sum = inTheta + outTheta;
             diff = inTheta - outTheta;
@@ -58,7 +62,7 @@ classdef OptTool < handle
         function outTheta = snell(~, refIn, refOut, inTheta) 
             %refIn为入射介质的折射率,refOut为出射介质的折射率
             %inTheta为入射角度,outTheta为出射角
-            outTheta = asin(refIn *  sin(inTheta) / refOut);
+            outTheta = asin(min(refIn *  sin(inTheta) / refOut, pi / 2));
         end
 
         %此函数根据波长和折射率虚部计算吸收系数

@@ -87,7 +87,7 @@ for i = 1: lambdaNum
 end
 
 %角度范围(rad)
-inThetaO = 0:1:40;
+inThetaO = 0:0.05:90;
 inTheta = inThetaO * pi / 180;
 thetaNum = size(inTheta, 2);
 refI2W = zeros(lambdaNum, thetaNum);

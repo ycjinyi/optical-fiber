@@ -84,6 +84,10 @@ xlabel("冰厚度(mm)");
 ylabel("光通量(lm)");
 title("NA0.28 不同光源径向距离下的响应");
 
+% hPoints = hPoints' * 1e3;
+% c = squeeze(pic1Data(1, :, :));
+% d = squeeze(pic1Data(2, :, :));
+
 %---单光纤对,轴向距离不变,改变径向距离,最大出射孔径角、光通量随数值孔径的变化----
 %不同的数值孔径
 NAS = 0.2:0.02:0.36;
@@ -129,3 +133,7 @@ legend(lambdaStr);
 xlabel("径向距离(mm)");
 ylabel("角度(°)");
 title("不同数值孔径下信号光纤最大入射角");
+
+% lightDisO = lightDisO';
+% a = squeeze(pic2Data(:, :, 1))';
+% b = squeeze(pic2Data(:, :, 3) * 180 / pi)';
