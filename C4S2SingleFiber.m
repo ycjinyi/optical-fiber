@@ -106,6 +106,8 @@ xlim([0, 110]);
 % set(gca, "YScale", "log");
 title("冰水的总厚度为0.5mm");
 
+ratio = round(ratio * 100);
+a = pic2Data';
 
 % <<<<<<<<<<<<<<<<<<<<<3、波段不变,<冰水比例><总厚度>变化>>>>>>>>>>>>>>>>>>>>
 CG = ColorGenerator();
@@ -157,6 +159,8 @@ xlim([0, 3]);
 ylabel("光通量之差(lm)");
 title("不同波段下的变化趋势");
 
+H = H' * 1e3;
+diffData = diffData';
 
 % <<<<<<<<<<<<<<<<<<<<<4、波段不变,<冰水比例><总厚度>变化>>>>>>>>>>>>>>>>>>>>
 lambdao = 800:1:1700;
@@ -204,3 +208,6 @@ legend(lambdaStr);
 xlabel("波长(nm)");
 ylabel("光通量之差(lm)");
 title("不同厚度下的变化趋势");
+
+lambdao = lambdao';
+H = H* 1e3;

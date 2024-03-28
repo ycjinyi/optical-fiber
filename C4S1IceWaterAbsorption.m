@@ -102,6 +102,7 @@ width = 1;
 iceTemp = importdata(strcat(nowpath, "\光学常数冰\冰的温度依赖特性.txt"));
 tempRange = 160: 10: 270;
 targetRange = (0.8: 0.005: 1.8)';
+% targetRange = (0.2: 0.05: 100)';
 iceNITemp = [iceTemp(:, 1), iceTemp(:, 2 + size(tempRange, 2): end)];
 [colorTable, legendStr] = CG.generate(tempRange);
 %首先转换为目标范围
@@ -119,7 +120,7 @@ for i = 1: size(tempRange, 2)
         [colorTable(i, :), 0.6], LineWidth=width); hold on;
 end
 legend(legendStr);
-% set(gca, "XScale", "log");
+set(gca, "XScale", "log");
 set(gca, "YScale", "log");
 xlabel("波长(um)");
 ylabel("穿透深度");

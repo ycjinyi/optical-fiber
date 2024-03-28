@@ -120,3 +120,7 @@ xlabel("冰厚度(mm)");
 ylabel("光通量(lm)");
 ylim([0, 1.4e-3]);
 title("不同光纤排布下接收光纤2的响应");
+
+H1 = H1' * 1e3;
+a = squeeze(pic1Data(:, 1, :));
+b = squeeze(pic1Data(:, 2, :));
