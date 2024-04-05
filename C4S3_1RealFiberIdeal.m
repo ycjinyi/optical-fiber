@@ -98,7 +98,7 @@ z2 = squeeze(Z(2, :, :));
 z3 = squeeze(Z(3, :, :));
 z4 = squeeze(Z(4, :, :));
 
-level = 10;
+level = 7;
 
 
 X1 = X * 1e3;
@@ -106,50 +106,125 @@ Y1 = Y * 1e3;
 
 flux1 = sum(flux, 3);
 
+
+%图字体大小
+pfz = 15;
+%图线宽
+plw = 2.4;
+
+%轴标题大小
+fz = 24;
+%轴线宽
+lw = 2.2;
+
+
+%890nm
+figure(4);
+
+% set(gca, 'FontSize', fz, 'LineWidth', lw, 'FontName', 'Times New Roman', ...
+%     'XTick', []);
+% box off
+% ax2 = axes('Position',get(gca,'Position'),...
+%     'Color','none',...
+%     'XAxisLocation','top',...
+%     'YAxisLocation','right',...
+%     'XColor','k','YColor','k');
+% set(ax2,'YTick', [], 'LineWidth', lw);
+% set(ax2,'XTick', [], 'LineWidth', lw);
+
+
 figure(1);
+% subplot(2, 2, 1);
 %对z1进行拟合
 [fitresult, ~] = surfFit(H(1, :)', H(2, :)', flux1(1, :)', 0.35);
-[C,h] = contour(X1, Y1, 1e3 * fitresult(X, Y), level, 'LineWidth', 0.9, 'ShowText', 'on');
+[C,h] = contour(X1, Y1, 1e3 * fitresult(X, Y), 10, 'LineWidth', plw, 'ShowText', 'on');
+xticks([0.1 0.3 0.5 0.7 0.9]);
+yticks([0.1 0.3 0.5 0.7 0.9]);
 colormap("cool");
-xlabel("冰厚(mm)");
-ylabel("水厚(mm)");
-title("890nm");
+% xlabel("冰厚(mm)");
+% ylabel("水厚(mm)");
+% title("890nm");
 h.LevelList = round(h.LevelList,1);
-clabel(C,h,'LabelSpacing',270);
+clabel(C,h,'LabelSpacing',270, 'FontSize', pfz, 'FontName', 'Times New Roman');
+set(gca, 'FontSize', fz, 'LineWidth', lw, 'FontName', 'Times New Roman', 'XTick', []);
+box off
+ax2 = axes('Position',get(gca,'Position'),...
+    'Color','none',...
+    'XAxisLocation','top',...
+    'YAxisLocation','right',...
+    'XColor','k','YColor','k');
+set(ax2,'YTick', [], 'LineWidth', lw);
+set(ax2,'XTick', [], 'LineWidth', lw);
 
 
 figure(2);
+% subplot(2, 2, 2);
 %对z2进行拟合
 [fitresult, ~] = surfFit(H(1, :)', H(2, :)', flux1(2, :)', 0.55);
-[C,h] = contour(X1, Y1, 1e3 * fitresult(X, Y), level, 'LineWidth', 0.9, 'ShowText', 'on'); 
+[C,h] = contour(X1, Y1, 1e3 * fitresult(X, Y), 10, 'LineWidth', plw, 'ShowText', 'on'); 
+xticks([0.1 0.3 0.5 0.7 0.9]);
+yticks([0.1 0.3 0.5 0.7 0.9]);
 colormap("cool");
-xlabel("冰厚(mm)");
-ylabel("水厚(mm)");
-title("1350nm");
+% xlabel("冰厚(mm)");
+% ylabel("水厚(mm)");
+% title("1350nm");
 h.LevelList = round(h.LevelList,1);
-clabel(C,h,'LabelSpacing',270);
+clabel(C,h,'LabelSpacing',270, 'FontSize', pfz, 'FontName', 'Times New Roman');
+set(gca, 'FontSize', fz, 'LineWidth', lw, 'FontName', 'Times New Roman', 'XTick', [], 'yTick', []);
+box off
+ax2 = axes('Position',get(gca,'Position'),...
+    'Color','none',...
+    'XAxisLocation','top',...
+    'YAxisLocation','right',...
+    'XColor','k','YColor','k');
+set(ax2,'YTick', [], 'LineWidth', lw);
+set(ax2,'XTick', [], 'LineWidth', lw);
 % colorbar;
 
 figure(3);
-[C,h] = contour(X1, Y1, 1e3 * z3, level, 'LineWidth', 0.9, 'ShowText', 'on'); 
+% subplot(2, 2, 3);
+[C,h] = contour(X1, Y1, 1e3 * z3, level, 'LineWidth', plw, 'ShowText', 'on'); 
+xticks([0.1 0.3 0.5 0.7 0.9]);
+yticks([0.1 0.3 0.5 0.7 0.9]);
 colormap("cool");
-xlabel("冰厚(mm)");
-ylabel("水厚(mm)");
-title("1450nm");
+% xlabel("冰厚(mm)");
+% ylabel("水厚(mm)");
+% title("1450nm");
 h.LevelList = round(h.LevelList,1);
-clabel(C,h,'LabelSpacing',270);
+clabel(C,h,'LabelSpacing',600, 'FontSize', pfz, 'FontName', 'Times New Roman');
+set(gca, 'FontSize', fz, 'LineWidth', lw, 'FontName', 'Times New Roman');
+box off
+ax2 = axes('Position',get(gca,'Position'),...
+    'Color','none',...
+    'XAxisLocation','top',...
+    'YAxisLocation','right',...
+    'XColor','k','YColor','k');
+set(ax2,'YTick', [], 'LineWidth', lw);
+set(ax2,'XTick', [], 'LineWidth', lw);
 % colorbar;
 
 figure(4);
+% subplot(2, 2, 4);
 % 绘制等高线图
-[C,h] = contour(X1, Y1, 1e3 * z4, level, 'LineWidth', 0.9, 'ShowText', 'on');
+[C,h] = contour(X1, Y1, 1e3 * z4, level, 'LineWidth', plw, 'ShowText', 'on');
+xticks([0.1 0.3 0.5 0.7 0.9]);
+yticks([0.1 0.3 0.5 0.7 0.9]);
 colormap("cool");
-xlabel("冰厚(mm)");
-ylabel("水厚(mm)");
-title("1550nm");
+% xlabel("冰厚(mm)");
+% ylabel("水厚(mm)");
+% title("1550nm");
 h.LevelList = round(h.LevelList,1);
 % clabel(C, h,'fontsize',9,'color','b','rotation',0)
-clabel(C,h,'LabelSpacing',270);
+set(gca, 'FontSize', fz, 'LineWidth', lw, 'FontName', 'Times New Roman', 'yTick', []);
+clabel(C,h,'LabelSpacing',300, 'FontSize', pfz, 'FontName', 'Times New Roman');
+box off
+ax2 = axes('Position',get(gca,'Position'),...
+    'Color','none',...
+    'XAxisLocation','top',...
+    'YAxisLocation','right',...
+    'XColor','k','YColor','k');
+set(ax2,'YTick', [], 'LineWidth', lw);
+set(ax2,'XTick', [], 'LineWidth', lw);
 % colorbar;
 % grid on;
 

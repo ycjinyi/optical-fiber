@@ -100,7 +100,26 @@ CG = ColorGenerator();
 X1 = X * 1e3;
 Y1 = Y * 1e3;
 
+X = X(1: 60, 1: 60);
+Y = Y(1: 60, 1: 60);
+
+X1 = X1(1: 60, 1: 60);
+Y1 = Y1(1: 60, 1: 60);
+
+z3 = z3(1: 60, 1: 60);
+z4 = z4(1: 60, 1: 60);
+
 lim = [0, 6];
+
+%图字体大小
+pfz = 15;
+%图线宽
+plw = 2.4;
+
+%轴标题大小
+fz = 24;
+%轴线宽
+lw = 2.2;
 
 al = 0.9;
 level = 10;
@@ -112,12 +131,16 @@ figure;
 pcolor(X1, Y1, 1e3 * fitresult1(X, Y));
 shading interp;
 colormap("cool");
-xlabel("冰厚(mm)");
-ylabel("水厚(mm)");
+set(gca, 'FontSize', fz, 'LineWidth', lw, 'FontName', 'Times New Roman', 'XTick', []);
+yticks([0 2 4 6]);
+% xlabel("冰厚(mm)");
+% ylabel("水厚(mm)");
 xlim(lim);
 ylim(lim);
-title("890nm");
-colorbar;
+% title("890nm");
+cb = colorbar;
+cb.LineWidth = 1.5;
+% axis off; % 关闭坐标轴显
 
 figure;
 % [C,h] = contourf(X1, Y1, 1e3 * fitresult2(X, Y), level, 'LineWidth', 0.9, 'ShowText', 'on');
@@ -125,13 +148,18 @@ figure;
 % clabel(C,h, 'LabelSpacing', 270);
 pcolor(X1, Y1, 1e3 * fitresult2(X, Y));
 shading interp;
+set(gca, 'FontSize', fz, 'LineWidth', lw, 'FontName', 'Times New Roman', 'XTick', [], 'yTick', []);
 colormap("cool");
-xlabel("冰厚(mm)");
-ylabel("水厚(mm)");
+% xlabel("冰厚(mm)");
+% ylabel("水厚(mm)");
 xlim(lim);
 ylim(lim);
-title("1350nm");
+% title("1350nm");
 colorbar;
+cb = colorbar;
+cb.LineWidth = 1.5;
+
+lim = [0, 1];
 
 figure;
 % [C,h] = contourf(X1, Y1, 1e3 * z3, level, 'LineWidth', 0.9, 'ShowText', 'on');
@@ -139,13 +167,18 @@ figure;
 % clabel(C,h, 'LabelSpacing', 270);
 pcolor(X1, Y1, 1e3 * z3);
 shading interp;
+% set(gca, 'FontSize', fz, 'LineWidth', lw, 'FontName', 'Times New Roman');
+set(gca, 'FontSize', fz, 'LineWidth', lw, 'FontName', 'Times New Roman', ...
+        'yTick', [], ...
+        'xTick', []);
 colormap("cool");
-xlabel("冰厚(mm)");
-ylabel("水厚(mm)");
+% xlabel("冰厚(mm)");
+% ylabel("水厚(mm)");
 xlim(lim);
 ylim(lim);
-title("1450nm");
-colorbar;
+% title("1450nm");
+cb = colorbar;
+cb.LineWidth = 1.5;
 
 figure;
 % [C,h] = contourf(X1, Y1, 1e3 * z4, level, 'LineWidth', 0.9, 'ShowText', 'on');
@@ -153,10 +186,15 @@ figure;
 % clabel(C,h, 'LabelSpacing', 270);
 pcolor(X1, Y1, 1e3 * z4);
 shading interp;
+% set(gca, 'FontSize', fz, 'LineWidth', lw, 'FontName', 'Times New Roman', 'yTick', []);
+set(gca, 'FontSize', fz, 'LineWidth', lw, 'FontName', 'Times New Roman', ...
+    'yTick', [], ...
+    'xTick', []);
 colormap("cool");
-xlabel("冰厚(mm)");
-ylabel("水厚(mm)");
+% xlabel("冰厚(mm)");
+% ylabel("水厚(mm)");
 xlim(lim);
 ylim(lim);
-title("1550nm");
-colorbar;
+% title("1550nm");
+cb = colorbar;
+cb.LineWidth = 1.5;
